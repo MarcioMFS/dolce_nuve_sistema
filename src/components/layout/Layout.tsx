@@ -26,14 +26,14 @@ const NavItem: React.FC<NavItemProps> = ({ to, label, icon, isActive }) => {
     <Link
       to={to}
       className={twMerge(
-        'flex items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100/50',
-        isActive && 'bg-primary-100 text-primary-900'
+        'flex items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100',
+        isActive && 'bg-primary-100 text-primary-600'
       )}
     >
       <span className={twMerge(isActive ? 'text-primary-600' : 'text-gray-500')}>
         {icon}
       </span>
-      <span className={twMerge('text-sm font-medium', isActive ? 'text-primary-900' : 'text-gray-700')}>
+      <span className={twMerge('text-sm font-medium', isActive ? 'text-primary-600' : 'text-gray-700')}>
         {label}
       </span>
     </Link>
@@ -58,7 +58,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50">
       {/* Mobile Menu Button */}
       <div className="md:hidden fixed top-4 left-4 z-30">
         <button
@@ -83,8 +83,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="relative bg-white w-64 h-full overflow-y-auto shadow-xl">
           <div className="p-6 flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <IceCream2 className="h-8 w-8 text-primary-600" />
-              <span className="text-xl font-bold text-gray-900">GeladinhosPRO</span>
+              <img src="/public/#FDEFC9.png" alt="Dolce Nuve" className="h-12 w-12" />
+              <span className="text-xl font-bold text-primary-600">Dolce Nuve</span>
             </div>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
@@ -108,7 +108,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="space-y-1">
               <Link
                 to="/configuracoes"
-                className="flex items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100/50"
+                className="flex items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100"
               >
                 <span className="text-gray-500">
                   <Settings size={20} />
@@ -116,7 +116,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <span className="text-sm font-medium text-gray-700">Configurações</span>
               </Link>
               <button
-                className="flex w-full items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100/50"
+                className="flex w-full items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100"
               >
                 <span className="text-gray-500">
                   <LogOut size={20} />
@@ -133,9 +133,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex flex-col w-64">
           <div className="flex flex-col h-0 flex-1 bg-white shadow-md">
             <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-              <div className="flex items-center justify-center space-x-2 px-4 mb-6">
-                <IceCream2 className="h-8 w-8 text-primary-600" />
-                <span className="text-xl font-bold text-gray-900">GeladinhosPRO</span>
+              <div className="flex items-center justify-center px-4 mb-6">
+                <img src="/public/#FDEFC9.png" alt="Dolce Nuve" className="h-12 w-12 mr-2" />
+                <span className="text-xl font-bold text-primary-600">Dolce Nuve</span>
               </div>
               <nav className="p-3 space-y-1">
                 {navItems.map((item) => (
@@ -153,7 +153,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               <div className="space-y-1">
                 <Link
                   to="/configuracoes"
-                  className="flex items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100/50"
+                  className="flex items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100"
                 >
                   <span className="text-gray-500">
                     <Settings size={20} />
@@ -161,7 +161,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <span className="text-sm font-medium text-gray-700">Configurações</span>
                 </Link>
                 <button
-                  className="flex w-full items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100/50"
+                  className="flex w-full items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100"
                 >
                   <span className="text-gray-500">
                     <LogOut size={20} />
