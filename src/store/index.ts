@@ -23,26 +23,26 @@ interface StoreState {
   geladinhos: GeladinhoWithCalculations[];
 
   // Product actions
-  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   getProduct: (id: string) => ProductWithCalculations | undefined;
   fetchProducts: () => Promise<void>;
 
   // Recipe actions
-  addRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   updateRecipe: (id: string, recipe: Partial<Recipe>) => Promise<void>;
   deleteRecipe: (id: string) => Promise<void>;
   getRecipe: (id: string) => RecipeWithCalculations | undefined;
   fetchRecipes: () => Promise<void>;
   
   // Ingredient actions
-  addIngredientToRecipe: (recipeId: string, ingredient: Omit<Ingredient, 'id'>) => Promise<void>;
-  updateIngredient: (recipeId: string, ingredientId: string, ingredient: Partial<Ingredient>) => Promise<void>;
-  removeIngredientFromRecipe: (recipeId: string, ingredientId: string) => Promise<void>;
+  addIngredientToRecipe: (recipe_id: string, ingredient: Omit<Ingredient, 'id'>) => Promise<void>;
+  updateIngredient: (recipe_id: string, ingredientId: string, ingredient: Partial<Ingredient>) => Promise<void>;
+  removeIngredientFromRecipe: (recipe_id: string, ingredientId: string) => Promise<void>;
 
   // Geladinho actions
-  addGeladinho: (geladinho: Omit<Geladinho, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addGeladinho: (geladinho: Omit<Geladinho, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   updateGeladinho: (id: string, geladinho: Partial<Geladinho>) => Promise<void>;
   deleteGeladinho: (id: string) => Promise<void>;
   getGeladinho: (id: string) => GeladinhoWithCalculations | undefined;
@@ -163,7 +163,7 @@ export const useStore = create<StoreState>()(
             ...recipe,
             ingredients: recipe.ingredients.map((ingredient: any) => ({
               id: ingredient.id,
-              productId: ingredient.product_id,
+              product_id: ingredient.product_id,
               quantity: ingredient.quantity,
               product: ingredient.products ? processProductWithCalculations(ingredient.products) : undefined,
             })),
@@ -193,7 +193,7 @@ export const useStore = create<StoreState>()(
         // Then add ingredients
         const ingredients = recipe.ingredients.map((ingredient) => ({
           recipe_id: newRecipe.id,
-          product_id: ingredient.productId,
+          product_id: ingredient.product_id,
           quantity: ingredient.quantity,
         }));
 
@@ -234,7 +234,7 @@ export const useStore = create<StoreState>()(
           // Add new ingredients
           const ingredients = updatedFields.ingredients.map((ingredient) => ({
             recipe_id: id,
-            product_id: ingredient.productId,
+            product_id: ingredient.product_id,
             quantity: ingredient.quantity,
           }));
 
@@ -272,12 +272,12 @@ export const useStore = create<StoreState>()(
       },
       
       // Ingredient actions
-      addIngredientToRecipe: async (recipeId, ingredient) => {
+      addIngredientToRecipe: async (recipe_id, ingredient) => {
         const { error } = await supabase
           .from('recipe_ingredients')
           .insert([{
-            recipe_id: recipeId,
-            product_id: ingredient.productId,
+            recipe_id,
+            product_id: ingredient.product_id,
             quantity: ingredient.quantity,
           }]);
         
@@ -291,11 +291,11 @@ export const useStore = create<StoreState>()(
         await get().fetchGeladinhos();
       },
       
-      updateIngredient: async (recipeId, ingredientId, updatedFields) => {
+      updateIngredient: async (recipe_id, ingredientId, updatedFields) => {
         const { error } = await supabase
           .from('recipe_ingredients')
           .update({
-            product_id: updatedFields.productId,
+            product_id: updatedFields.product_id,
             quantity: updatedFields.quantity,
           })
           .eq('id', ingredientId);
@@ -310,7 +310,7 @@ export const useStore = create<StoreState>()(
         await get().fetchGeladinhos();
       },
       
-      removeIngredientFromRecipe: async (recipeId, ingredientId) => {
+      removeIngredientFromRecipe: async (recipe_id, ingredientId) => {
         const { error } = await supabase
           .from('recipe_ingredients')
           .delete()
@@ -356,7 +356,7 @@ export const useStore = create<StoreState>()(
               ...geladinho.recipe,
               ingredients: geladinho.recipe.ingredients.map((ingredient: any) => ({
                 id: ingredient.id,
-                productId: ingredient.product_id,
+                product_id: ingredient.product_id,
                 quantity: ingredient.quantity,
                 product: ingredient.products ? processProductWithCalculations(ingredient.products) : undefined,
               })),

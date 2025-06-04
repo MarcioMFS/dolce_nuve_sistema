@@ -52,8 +52,8 @@ export interface GeladinhoFormData {
   profit_margin: number;
   status: Status;
   description?: string;
-  prepTime?: number;
-  freezingTemp?: number;
+  prep_time?: number;
+  freezing_temp?: number;
   notes?: string;
   image_url?: string;
 }
@@ -92,8 +92,8 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
       profit_margin: defaultValues?.profit_margin || 50,
       status: defaultValues?.status || 'Ativo',
       description: defaultValues?.description || '',
-      prepTime: defaultValues?.prepTime || undefined,
-      freezingTemp: defaultValues?.freezingTemp || undefined,
+      prep_time: defaultValues?.prep_time || undefined,
+      freezing_temp: defaultValues?.freezing_temp || undefined,
       notes: defaultValues?.notes || '',
       image_url: defaultValues?.image_url || '',
     },
@@ -121,8 +121,8 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
     const formattedData = {
       ...data,
       profit_margin: Number(data.profit_margin),
-      prepTime: data.prepTime ? Number(data.prepTime) : undefined,
-      freezingTemp: data.freezingTemp ? Number(data.freezingTemp) : undefined,
+      prep_time: data.prep_time ? Number(data.prep_time) : undefined,
+      freezing_temp: data.freezing_temp ? Number(data.freezing_temp) : undefined,
     };
     
     onSubmit(formattedData);
@@ -264,14 +264,14 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
               min="1"
               placeholder="Ex: 30"
               leftIcon={<Clock size={18} />}
-              {...register('prepTime', {
+              {...register('prep_time', {
                 valueAsNumber: true,
                 min: {
                   value: 1,
                   message: 'O tempo deve ser positivo',
                 },
               })}
-              error={errors.prepTime?.message}
+              error={errors.prep_time?.message}
             />
             
             <Input
@@ -280,14 +280,14 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
               max="0"
               placeholder="Ex: -18"
               leftIcon={<Thermometer size={18} />}
-              {...register('freezingTemp', {
+              {...register('freezing_temp', {
                 valueAsNumber: true,
                 max: {
                   value: 0,
                   message: 'A temperatura deve ser negativa ou zero',
                 },
               })}
-              error={errors.freezingTemp?.message}
+              error={errors.freezing_temp?.message}
             />
           </div>
           
