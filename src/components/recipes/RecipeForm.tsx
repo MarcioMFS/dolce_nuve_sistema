@@ -64,8 +64,8 @@ export const RecipeForm: React.FC<RecipeFormProps> = ({
     defaultValues: {
       name: defaultValues?.name || '',
       yield: defaultValues?.yield || 1,
-      ingredients: defaultValues?.ingredients.map(ingredient => ({
-        productId: ingredient.productId,
+      ingredients: defaultValues?.ingredients.map((ingredient) => ({
+        product_id: ingredient.product_id,
         quantity: ingredient.quantity,
       })) || [],
     },
@@ -85,9 +85,9 @@ export const RecipeForm: React.FC<RecipeFormProps> = ({
     
     if (watchedIngredients) {
       watchedIngredients.forEach((ingredient, index) => {
-        const product = products.find(p => p.id === ingredient.productId);
+        const product = products.find((p) => p.id === ingredient.product_id);
         if (product && ingredient.quantity) {
-          total += product.unitPrice * ingredient.quantity;
+          total += product.unit_price * ingredient.quantity;
         }
       });
     }
@@ -102,7 +102,7 @@ export const RecipeForm: React.FC<RecipeFormProps> = ({
     if (!selectedProductId || ingredientQuantity <= 0) return;
     
     append({
-      productId: selectedProductId,
+      product_id: selectedProductId,
       quantity: ingredientQuantity,
     });
     
@@ -232,15 +232,15 @@ export const RecipeForm: React.FC<RecipeFormProps> = ({
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {fields.map((field, index) => {
-                      const product = products.find(p => p.id === field.productId);
-                      const cost = product ? product.unitPrice * field.quantity : 0;
+                      const product = products.find((p) => p.id === field.product_id);
+                      const cost = product ? product.unit_price * field.quantity : 0;
                       
                       return (
                         <tr key={field.id}>
                           <td className="px-4 py-2 text-sm text-gray-900">
-                            <input 
-                              type="hidden" 
-                              {...register(`ingredients.${index}.productId` as const)} 
+                          <input
+                              type="hidden"
+                              {...register(`ingredients.${index}.product_id` as const)}
                             />
                             {product?.name || 'Ingrediente desconhecido'}
                           </td>
