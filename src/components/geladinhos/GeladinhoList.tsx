@@ -118,8 +118,7 @@ export const GeladinhoList: React.FC<GeladinhoListProps> = ({ geladinhos }) => {
               placeholder="Status"
             />
           </div>
-          <Link to="/gela
-dinhos/novo">
+          <Link to="/geladinhos/novo">
             <Button leftIcon={<Plus size={18} />}>Novo Geladinho</Button>
           </Link>
         </div>
@@ -180,7 +179,7 @@ dinhos/novo">
                       <DollarSign size={16} className="text-gray-400 mr-1" />
                       <span className="text-sm text-gray-600">Custo:</span>
                       <span className="text-sm font-medium ml-1">
-                        {formatCurrency(geladinho.unitCost)}
+                        {formatCurrency(geladinho.unit_cost)}
                       </span>
                     </div>
                     
@@ -188,7 +187,7 @@ dinhos/novo">
                       <DollarSign size={16} className="text-green-500 mr-1" />
                       <span className="text-sm text-gray-600">Venda:</span>
                       <span className="text-sm font-bold text-primary-600 ml-1">
-                        {formatCurrency(geladinho.suggestedPrice)}
+                        {formatCurrency(geladinho.suggested_price)}
                       </span>
                     </div>
                     
@@ -204,23 +203,23 @@ dinhos/novo">
                       <DollarSign size={16} className="text-success-500 mr-1" />
                       <span className="text-sm text-gray-600">Lucro:</span>
                       <span className="text-sm font-medium text-success-600 ml-1">
-                        {formatCurrency(geladinho.unitProfit)}
+                        {formatCurrency(geladinho.unit_profit)}
                       </span>
                     </div>
                   </div>
                   
                   <div className="mt-auto grid grid-cols-2 gap-2 text-xs text-gray-500">
-                    {geladinho.prepTime && (
+                    {geladinho.prep_time && (
                       <div className="flex items-center">
                         <Clock size={14} className="mr-1" />
-                        <span>Preparo: {geladinho.prepTime} min</span>
+                        <span>Preparo: {geladinho.prep_time} min</span>
                       </div>
                     )}
                     
-                    {geladinho.freezingTemp && (
+                    {geladinho.freezing_temp && (
                       <div className="flex items-center">
                         <Thermometer size={14} className="mr-1" />
-                        <span>Temp: {geladinho.freezingTemp}°C</span>
+                        <span>Temp: {geladinho.freezing_temp}°C</span>
                       </div>
                     )}
                     
