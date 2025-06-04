@@ -47,7 +47,7 @@ interface GeladinhoFormProps {
 
 export interface GeladinhoFormData {
   name: string;
-  recipeId: string;
+  recipe_id: string;
   category: Category;
   profit_margin: number;
   status: Status;
@@ -87,7 +87,7 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
   } = useForm<GeladinhoFormData>({
     defaultValues: {
       name: defaultValues?.name || '',
-      recipeId: defaultValues?.recipeId || '',
+       recipe_id: defaultValues?. recipe_id || '',
       category: defaultValues?.category || 'Cremoso',
       profit_margin: defaultValues?.profit_margin || 50,
       status: defaultValues?.status || 'Ativo',
@@ -99,11 +99,11 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
     },
   });
   
-  const watchedRecipeId = watch('recipeId');
+  const watched recipe_id = watch(' recipe_id');
   const watchedProfitMargin = watch('profit_margin');
   
   const selectedRecipe = recipes.find(
-    (recipe) => recipe.id === watchedRecipeId
+    (recipe) => recipe.id === watched recipe_id
   ) as RecipeWithCalculations | undefined;
   
   const unitCost = selectedRecipe?.unitCost || 0;
@@ -158,10 +158,10 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
             <Select
               label="Receita Base"
               options={recipeOptions}
-              {...register('recipeId', {
+              {...register('recipe_id', {
                 required: 'Receita é obrigatória',
               })}
-              error={errors.recipeId?.message}
+              error={errors.recipe_Id?.message}
             />
           </div>
           
