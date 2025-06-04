@@ -46,7 +46,7 @@ export interface Geladinho {
   name: string;
   recipeId: string;
   category: Category;
-  profitMargin: number;
+  profit_margin: number;
   status: Status;
   description?: string;
   prepTime?: number;

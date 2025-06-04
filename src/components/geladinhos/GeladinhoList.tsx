@@ -118,7 +118,8 @@ export const GeladinhoList: React.FC<GeladinhoListProps> = ({ geladinhos }) => {
               placeholder="Status"
             />
           </div>
-          <Link to="/geladinhos/novo">
+          <Link to="/gela
+dinhos/novo">
             <Button leftIcon={<Plus size={18} />}>Novo Geladinho</Button>
           </Link>
         </div>
@@ -195,7 +196,7 @@ export const GeladinhoList: React.FC<GeladinhoListProps> = ({ geladinhos }) => {
                       <Tag size={16} className="text-gray-400 mr-1" />
                       <span className="text-sm text-gray-600">Margem:</span>
                       <span className="text-sm font-medium ml-1">
-                        {geladinho.profitMargin}%
+                        {geladinho.profit_margin}%
                       </span>
                     </div>
                     

@@ -49,7 +49,7 @@ export interface GeladinhoFormData {
   name: string;
   recipeId: string;
   category: Category;
-  profitMargin: number;
+  profit_margin: number;
   status: Status;
   description?: string;
   prepTime?: number;
@@ -89,7 +89,7 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
       name: defaultValues?.name || '',
       recipeId: defaultValues?.recipeId || '',
       category: defaultValues?.category || 'Cremoso',
-      profitMargin: defaultValues?.profitMargin || 50,
+      profit_margin: defaultValues?.profit_margin || 50,
       status: defaultValues?.status || 'Ativo',
       description: defaultValues?.description || '',
       prepTime: defaultValues?.prepTime || undefined,
@@ -100,7 +100,7 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
   });
   
   const watchedRecipeId = watch('recipeId');
-  const watchedProfitMargin = watch('profitMargin');
+  const watchedProfitMargin = watch('profit_margin');
   
   const selectedRecipe = recipes.find(
     (recipe) => recipe.id === watchedRecipeId
@@ -120,7 +120,7 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
     // Convert numeric strings to numbers
     const formattedData = {
       ...data,
-      profitMargin: Number(data.profitMargin),
+      profit_margin: Number(data.profit_margin),
       prepTime: data.prepTime ? Number(data.prepTime) : undefined,
       freezingTemp: data.freezingTemp ? Number(data.freezingTemp) : undefined,
     };
@@ -183,7 +183,7 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
               max="1000"
               step="1"
               leftIcon={<Percent size={18} />}
-              {...register('profitMargin', {
+              {...register('profit_margin', {
                 required: 'Margem é obrigatória',
                 min: {
                   value: 0,
@@ -195,7 +195,7 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
                 },
                 valueAsNumber: true,
               })}
-              error={errors.profitMargin?.message}
+              error={errors.profit_margin?.message}
             />
             
             <Select

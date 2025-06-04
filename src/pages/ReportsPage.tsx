@@ -44,11 +44,11 @@ export const ReportsPage: React.FC = () => {
       ['Nome', 'Unidade', 'Quantidade', 'Valor Total', 'Preço Unitário', 'Preço por kg/L'],
       ...products.map(p => [
         p.name,
-        p.unitOfMeasure,
-        p.totalQuantity.toString(),
-        p.totalValue.toFixed(2),
+        p.unit_of_measure,
+        p.total_quantity.toString(),
+        p.total_value.toFixed(2),
         p.unitPrice.toFixed(4),
-        p.unitOfMeasure === 'unidades' ? '' : (p.unitPrice * 1000).toFixed(2)
+        p.unit_of_measure === 'unidades' ? '' : (p.unitPrice * 1000).toFixed(2)
       ])
     ]
       .map(row => row.join(','))

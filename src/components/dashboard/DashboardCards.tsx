@@ -37,7 +37,7 @@ export const DashboardCards: React.FC<DashboardCardsProps> = ({
   
   // Calculate average profit margin
   const avgProfitMargin = geladinhos.length > 0
-    ? geladinhos.reduce((sum, g) => sum + (g.profitMargin || 0), 0) / geladinhos.length
+    ? geladinhos.reduce((sum, g) => sum + (g.profit_margin || 0), 0) / geladinhos.length
     : 0;
   
   // Find most profitable geladinho

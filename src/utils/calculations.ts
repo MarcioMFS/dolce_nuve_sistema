@@ -64,9 +64,9 @@ export const calculateRecipeUnitCost = (
 // 💰 Calcula o preço sugerido com base na margem desejada
 export const calculateSuggestedPrice = (
   unitCost: number,
-  profitMargin: number
+  profit_margin: number
 ): number => {
-  return unitCost * (1 + profitMargin / 100);
+  return unitCost * (1 + profit_margin / 100);
 };
 
 // 📈 Lucro por unidade
@@ -131,7 +131,7 @@ export const processGeladinhoWithCalculations = (geladinho: Geladinho) => {
 
   const totalCost = geladinho.recipe.totalCost;
   const unitCost = geladinho.recipe.unitCost;
-  const suggestedPrice = calculateSuggestedPrice(unitCost, geladinho.profitMargin);
+  const suggestedPrice = calculateSuggestedPrice(unitCost, geladinho.profit_margin);
   const unitProfit = calculateUnitProfit(suggestedPrice, unitCost);
   const realMargin = calculateRealMargin(unitProfit, suggestedPrice);
 
