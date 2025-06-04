@@ -46,10 +46,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             className={twMerge(
               'block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm transition-colors',
+              'border py-2 px-3',
               error && 'border-error-500 focus:border-error-500 focus:ring-error-500',
               leftIcon && 'pl-10',
               rightIcon && 'pr-10',
-              'border py-2 px-3',
               className
             )}
             {...props}
