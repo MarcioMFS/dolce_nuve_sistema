@@ -25,9 +25,9 @@ interface ProductFormProps {
 
 export interface ProductFormData {
   name: string;
-  unitOfMeasure: UnitOfMeasure;
-  totalQuantity: number;
-  totalValue: number;
+  unit_of_measure: UnitOfMeasure;
+  total_quantity: number;
+  total_value: number;
   purchase_date: string;
   supplier?: string;
 }
@@ -51,9 +51,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   } = useForm<ProductFormData>({
     defaultValues: {
       name: defaultValues?.name || '',
-      unitOfMeasure: defaultValues?.unitOfMeasure || 'gramas',
-      totalQuantity: defaultValues?.totalQuantity || 0,
-      totalValue: defaultValues?.totalValue || 0,
+      unit_of_measure: defaultValues?.unit_of_measure || 'gramas',
+      total_quantity: defaultValues?.total_quantity || 0,
+      total_value: defaultValues?.total_value || 0,
       purchase_date: defaultValues?.purchase_date 
         ? format(new Date(defaultValues.purchase_date), 'yyyy-MM-dd') 
         : format(new Date(), 'yyyy-MM-dd'),
@@ -65,8 +65,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     // Convert numeric strings to numbers
     const formattedData = {
       ...data,
-      totalQuantity: Number(data.totalQuantity),
-      totalValue: Number(data.totalValue),
+      total_quantity: Number(data.total_quantity),
+      total_value: Number(data.total_value),
     };
     
     onSubmit(formattedData);
@@ -102,10 +102,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             <Select
               label="Unidade de Medida"
               options={unitOptions}
-              {...register('unitOfMeasure', {
+              {...register('unit_of_measure', {
                 required: 'Unidade de medida é obrigatória',
               })}
-              error={errors.unitOfMeasure?.message}
+              error={errors.unit_of_measure?.message}
             />
           </div>
 
@@ -116,7 +116,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               step="0.01"
               min="0.01"
               placeholder="Ex: 1000"
-              {...register('totalQuantity', {
+              {...register('total_quantity', {
                 required: 'Quantidade é obrigatória',
                 min: {
                   value: 0.01,
@@ -124,7 +124,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 },
                 valueAsNumber: true,
               })}
-              error={errors.totalQuantity?.message}
+              error={errors.total_quantity?.message}
             />
             
             <Input
@@ -134,7 +134,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               min="0.01"
               placeholder="Ex: 7.50"
               leftIcon={<DollarSign size={18} />}
-              {...register('totalValue', {
+              {...register('total_value', {
                 required: 'Valor é obrigatório',
                 min: {
                   value: 0.01,
@@ -142,7 +142,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 },
                 valueAsNumber: true,
               })}
-              error={errors.totalValue?.message}
+              error={errors.total_value?.message}
             />
           </div>
 

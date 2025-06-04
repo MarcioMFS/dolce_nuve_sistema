@@ -42,7 +42,7 @@ export const ProductList: React.FC<ProductListProps> = ({ products }) => {
       .includes(searchTerm.toLowerCase());
     
     const matchesUnit = unitFilter 
-      ? product.unitOfMeasure === unitFilter 
+      ? product.unit_of_measure === unitFilter 
       : true;
     
     return matchesSearch && matchesUnit;
@@ -127,17 +127,17 @@ export const ProductList: React.FC<ProductListProps> = ({ products }) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Badge variant="primary">
-                        {product.unitOfMeasure}
+                        {product.unit_of_measure}
                       </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.totalQuantity} {unitLabels[product.unitOfMeasure]}
+                      {product.total_quantity} {unitLabels[product.unit_of_measure]}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.formattedUnitPrice}/{unitLabels[product.unitOfMeasure]}
+                      {product.formattedUnitPrice}/{unitLabels[product.unit_of_measure]}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      {product.formattedStandardPrice}/{standardUnitLabels[product.unitOfMeasure]}
+                      {product.formattedStandardPrice}/{standardUnitLabels[product.unit_of_measure]}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(product.purchase_date).toLocaleDateString('pt-BR')}

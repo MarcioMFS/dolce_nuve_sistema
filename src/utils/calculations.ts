@@ -2,22 +2,22 @@ import { UnitOfMeasure, Product, Ingredient, Recipe, Geladinho } from '../types'
 
 // 🧮 Calcula o preço por unidade base (g, ml ou un)
 export const calculateUnitPrice = (
-  totalValue: number,
-  totalQuantity: number,
-  unitOfMeasure: UnitOfMeasure
+  total_value: number,
+  total_quantity: number,
+  unit_of_measure: UnitOfMeasure
 ): number => {
-  if (totalQuantity <= 0) return 0;
+  if (total_quantity <= 0) return 0;
 
   // Retorna o preço por grama, mililitro ou unidade
-  return totalValue / totalQuantity;
+  return total_value / total_quantity;
 };
 
 // 📏 Converte para unidade padrão (kg, L ou un)
 export const calculateStandardPrice = (
   unitPrice: number,
-  unitOfMeasure: UnitOfMeasure
+  unit_of_measure: UnitOfMeasure
 ): number => {
-  switch (unitOfMeasure) {
+  switch (unit_of_measure) {
     case 'gramas':
       return unitPrice * 1000; // para kg
     case 'litros':
@@ -89,12 +89,12 @@ export const calculateRealMargin = (
 // 🧾 Processa um produto individual para exibir preços
 export const processProductWithCalculations = (product: Product) => {
   const unitPrice = calculateUnitPrice(
-    product.totalValue,
-    product.totalQuantity,
-    product.unitOfMeasure
+    product.total_value,
+    product.total_quantity,
+    product.unit_of_measure
   );
 
-  const standardPrice = calculateStandardPrice(unitPrice, product.unitOfMeasure);
+  const standardPrice = calculateStandardPrice(unitPrice, product.unit_of_measure);
 
   return {
     ...product,

@@ -5,13 +5,13 @@ export type Status = 'Ativo' | 'Inativo' | 'Teste';
 export interface Product {
   id: string;
   name: string;
-  unitOfMeasure: UnitOfMeasure;
-  totalQuantity: number;
-  totalValue: number;
+  unit_of_measure: UnitOfMeasure;
+  total_quantity: number;
+  total_value: number;
   purchase_date: string;
   supplier?: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ProductWithCalculations extends Product {
@@ -32,8 +32,8 @@ export interface Recipe {
   name: string;
   ingredients: Ingredient[];
   yield: number;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface RecipeWithCalculations extends Recipe {
@@ -53,8 +53,8 @@ export interface Geladinho {
   freezingTemp?: number;
   notes?: string;
   imageUrl?: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
   recipe?: RecipeWithCalculations;
 }
 
