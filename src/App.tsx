@@ -9,6 +9,8 @@ import { RecipeFormPage } from './pages/RecipeFormPage';
 import { GeladinhosPage } from './pages/GeladinhosPage';
 import { GeladinhoFormPage } from './pages/GeladinhoFormPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { SalesPage } from './pages/SalesPage';
+import { SaleFormPage } from './pages/SaleFormPage';
 
 function App() {
   return (
@@ -28,7 +30,10 @@ function App() {
           <Route path="/geladinhos" element={<GeladinhosPage />} />
           <Route path="/geladinhos/novo" element={<GeladinhoFormPage />} />
           <Route path="/geladinhos/editar/:id" element={<GeladinhoFormPage />} />
-          
+
+          <Route path="/vendas" element={<SalesPage />} />
+          <Route path="/vendas/nova" element={<SaleFormPage />} />
+
           <Route path="/relatorios" element={<ReportsPage />} />
           
           <Route path="*" element={<Navigate to="/\" replace />} />

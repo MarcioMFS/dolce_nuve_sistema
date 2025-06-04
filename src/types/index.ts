@@ -68,3 +68,20 @@ export interface GeladinhoWithCalculations extends Geladinho {
   unit_profit: number;
   real_margin: number;
 }
+
+export interface Sale {
+  id: string;
+  sale_date: string;
+  geladinho_id: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  created_at: string;
+  updated_at: string;
+  geladinho?: GeladinhoWithCalculations;
+}
+
+export interface MonthlySales {
+  month: string;
+  total_sales: number;
+}
