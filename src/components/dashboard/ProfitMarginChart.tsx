@@ -32,7 +32,7 @@ export const ProfitMarginChart: React.FC<ProfitMarginChartProps> = ({
   const activeGeladinhos = geladinhos.filter(g => g.status === 'Ativo');
   
   // Sort by real margin (descending)
-  const sortedGeladinhos = [...activeGeladinhos].sort((a, b) => b.realMargin - a.realMargin);
+  const sortedGeladinhos = [...activeGeladinhos].sort((a, b) => b.real_margin - a.real_margin);
   
   // Take top 10
   const topGeladinhos = sortedGeladinhos.slice(0, 10);
@@ -42,14 +42,14 @@ export const ProfitMarginChart: React.FC<ProfitMarginChartProps> = ({
     datasets: [
       {
         label: 'Margem Real (%)',
-        data: topGeladinhos.map(g => g.realMargin),
+        data: topGeladinhos.map(g => g.real_margin),
         backgroundColor: 'rgba(99, 102, 241, 0.7)',
         borderColor: 'rgba(99, 102, 241, 1)',
         borderWidth: 1,
       },
       {
         label: 'Margem Desejada (%)',
-        data: topGeladinhos.map(g => g.profitMargin),
+        data: topGeladinhos.map(g => g.profit_margin),
         backgroundColor: 'rgba(14, 165, 233, 0.7)',
         borderColor: 'rgba(14, 165, 233, 1)',
         borderWidth: 1,

@@ -17,7 +17,7 @@ export const TopGeladinhosList: React.FC<TopGeladinhosListProps> = ({
   const activeGeladinhos = geladinhos.filter(g => g.status === 'Ativo');
   
   // Sort by profit (descending)
-  const sortedGeladinhos = [...activeGeladinhos].sort((a, b) => b.unitProfit - a.unitProfit);
+  const sortedGeladinhos = [...activeGeladinhos].sort((a, b) => b.unit_profit - a.unit_profit);
   
   // Take top 5
   const topGeladinhos = sortedGeladinhos.slice(0, 5);
@@ -47,14 +47,14 @@ export const TopGeladinhosList: React.FC<TopGeladinhosListProps> = ({
                       </Badge>
                       <span className="mx-2 text-xs text-gray-500">•</span>
                       <span className="text-xs text-gray-500">
-                        Custo: {formatCurrency(geladinho.unitCost)}
+                        Custo: {formatCurrency(geladinho.unit_cost)}
                       </span>
                     </div>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-lg font-bold text-primary-600">
-                    {formatCurrency(geladinho.unitProfit)}
+                    {formatCurrency(geladinho.unit_profit)}
                   </div>
                   <div className="text-xs text-gray-500">
                     lucro por unidade
