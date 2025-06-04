@@ -51,7 +51,7 @@ export const calculateRecipeTotalCost = (ingredients: Ingredient[]): number => {
   if (!ingredients || !Array.isArray(ingredients)) return 0;
   
   return ingredients.reduce((total, ingredient) => {
-    if (!ingredient.product) return total;
+    if (!ingredient?.product?.unit_price) return total;
     return total + calculateIngredientCost(ingredient.quantity, ingredient.product.unit_price);
   }, 0);
 };
@@ -119,11 +119,18 @@ export const processProductWithCalculations = (product: Product) => {
 export const processRecipeWithCalculations = (recipe: Recipe) => {
   if (!recipe) return null;
   
-  const totalCost = calculateRecipeTotalCost(recipe.ingredients);
+  // Ensure ingredients have their products processed
+  const processedIngredients = recipe.ingredients.map(ingredient => ({
+    ...ingredient,
+    product: ingredient.product ? processProductWithCalculations(ingredient.product) : undefined
+  }));
+  
+  const totalCost = calculateRecipeTotalCost(processedIngredients);
   const unitCost = calculateRecipeUnitCost(totalCost, recipe.yield);
 
   return {
     ...recipe,
+    ingredients: processedIngredients,
     totalCost,
     unitCost,
   };
@@ -131,25 +138,20 @@ export const processRecipeWithCalculations = (recipe: Recipe) => {
 
 // ❄️ Processa um geladinho completo (produto final)
 export const processGeladinhoWithCalculations = (geladinho: Geladinho) => {
-  if (!geladinho || !geladinho.recipe) {
-    return {
-      ...geladinho,
-      total_cost: 0,
-      unit_cost: 0,
-      suggested_price: 0,
-      unit_profit: 0,
-      real_margin: 0,
-    };
-  }
+  if (!geladinho) return null;
 
-  const total_cost = geladinho.recipe.totalCost || 0;
-  const unit_cost = geladinho.recipe.unitCost || 0;
+  // Process the recipe first if it exists
+  const processedRecipe = geladinho.recipe ? processRecipeWithCalculations(geladinho.recipe) : null;
+  
+  const total_cost = processedRecipe?.totalCost || 0;
+  const unit_cost = processedRecipe?.unitCost || 0;
   const suggested_price = calculateSuggestedPrice(unit_cost, geladinho.profit_margin);
   const unit_profit = calculateUnitProfit(suggested_price, unit_cost);
   const real_margin = calculateRealMargin(unit_profit, suggested_price);
 
   return {
     ...geladinho,
+    recipe: processedRecipe,
     total_cost,
     unit_cost,
     suggested_price,
