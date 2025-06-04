@@ -2,50 +2,21 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Edit, Plus, Search, Package } from 'lucide-react';
 
-import { ProductWithCalculations, UnitOfMeasure } from '../../types';
+import { ProductWithCalculations } from '../../types';
 import { formatCurrency } from '../../utils/calculations';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { Select } from '../ui/Select';
 import { Badge } from '../ui/Badge';
 
 interface ProductListProps {
   products: ProductWithCalculations[];
 }
 
-const unitLabels: Record<UnitOfMeasure, string> = {
-  gramas: 'g',
-  litros: 'ml',
-  unidades: 'un',
-};
-
-const standardUnitLabels: Record<UnitOfMeasure, string> = {
-  gramas: 'kg',
-  litros: 'L',
-  unidades: 'un',
-};
-
 export const ProductList: React.FC<ProductListProps> = ({ products }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [unitFilter, setUnitFilter] = useState<string>('');
-
-  const unitOptions = [
-    { value: '', label: 'Todas' },
-    { value: 'gramas', label: 'Gramas' },
-    { value: 'litros', label: 'Litros' },
-    { value: 'unidades', label: 'Unidades' },
-  ];
 
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    
-    const matchesUnit = unitFilter 
-      ? product.unit_of_measure === unitFilter 
-      : true;
-    
-    return matchesSearch && matchesUnit;
+    return product.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   return (
@@ -59,14 +30,6 @@ export const ProductList: React.FC<ProductListProps> = ({ products }) => {
             leftIcon={<Search size={18} />}
           />
         </div>
-        <div className="w-full sm:w-48">
-          <Select
-            options={unitOptions}
-            value={unitFilter}
-            onChange={(e) => setUnitFilter(e.target.value)}
-            label="Filtrar por unidade"
-          />
-        </div>
         <Link to="/produtos/novo">
           <Button leftIcon={<Plus size={18} />}>Novo Produto</Button>
         </Link>
@@ -77,7 +40,7 @@ export const ProductList: React.FC<ProductListProps> = ({ products }) => {
           <Package className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhum produto encontrado</h3>
           <p className="mt-1 text-sm text-gray-500">
-            {searchTerm || unitFilter
+            {searchTerm
               ? 'Tente ajustar os filtros de busca'
               : 'Comece adicionando um novo produto ao sistema.'}
           </p>
@@ -97,16 +60,13 @@ export const ProductList: React.FC<ProductListProps> = ({ products }) => {
                     Nome
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Unidade
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Quantidade
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Preço por g/ml/un
+                    Preço por grama
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Preço por kg/L/un
+                    Preço por kg
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Data da Compra
@@ -125,19 +85,14 @@ export const ProductList: React.FC<ProductListProps> = ({ products }) => {
                         <div className="text-xs text-gray-500">{product.supplier}</div>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge variant="primary">
-                        {product.unit_of_measure}
-                      </Badge>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {product.total_quantity}g
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.total_quantity} {unitLabels[product.unit_of_measure]}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatCurrency(product.unit_price)}/{unitLabels[product.unit_of_measure]}
+                      {formatCurrency(product.unit_price)}/g
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      {formatCurrency(product.standard_price)}/{standardUnitLabels[product.unit_of_measure]}
+                      {formatCurrency(product.standard_price)}/kg
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(product.purchase_date).toLocaleDateString('pt-BR')}

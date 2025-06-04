@@ -11,10 +11,9 @@ import {
 } from 'lucide-react';
 
 import { Input } from '../ui/Input';
-import { Select } from '../ui/Select';
 import { Button } from '../ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/Card';
-import { Product, UnitOfMeasure } from '../../types';
+import { Product } from '../../types';
 
 interface ProductFormProps {
   onSubmit: (data: ProductFormData) => void;
@@ -25,18 +24,12 @@ interface ProductFormProps {
 
 export interface ProductFormData {
   name: string;
-  unit_of_measure: UnitOfMeasure;
+  unit_of_measure: 'gramas';
   total_quantity: number;
   total_value: number;
   purchase_date: string;
   supplier?: string;
 }
-
-const unitOptions = [
-  { value: 'gramas', label: 'Gramas' },
-  { value: 'litros', label: 'Litros' },
-  { value: 'unidades', label: 'Unidades' },
-];
 
 export const ProductForm: React.FC<ProductFormProps> = ({
   onSubmit,
@@ -51,7 +44,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   } = useForm<ProductFormData>({
     defaultValues: {
       name: defaultValues?.name || '',
-      unit_of_measure: defaultValues?.unit_of_measure || 'gramas',
+      unit_of_measure: 'gramas',
       total_quantity: defaultValues?.total_quantity || 0,
       total_value: defaultValues?.total_value || 0,
       purchase_date: defaultValues?.purchase_date 
@@ -99,19 +92,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               error={errors.name?.message}
             />
             
-            <Select
-              label="Unidade de Medida"
-              options={unitOptions}
-              {...register('unit_of_measure', {
-                required: 'Unidade de medida é obrigatória',
-              })}
-              error={errors.unit_of_measure?.message}
-            />
+            <input type="hidden" {...register('unit_of_measure')} value="gramas" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label="Quantidade Total"
+              label="Quantidade (gramas)"
               type="number"
               step="0.01"
               min="0.01"
