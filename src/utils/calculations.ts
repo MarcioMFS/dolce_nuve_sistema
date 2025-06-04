@@ -30,6 +30,7 @@ export const calculateStandardPrice = (
 
 // 💸 Formata valores em R$ brasileiro
 export const formatCurrency = (value: number): string => {
+  if (typeof value !== 'number' || isNaN(value)) return 'R$ 0,00';
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -41,14 +42,17 @@ export const calculateIngredientCost = (
   ingredientQuantity: number,
   unitPrice: number
 ): number => {
+  if (!ingredientQuantity || !unitPrice) return 0;
   return ingredientQuantity * unitPrice;
 };
 
 // 📋 Soma total do custo da receita (todos os ingredientes)
 export const calculateRecipeTotalCost = (ingredients: Ingredient[]): number => {
+  if (!ingredients || !Array.isArray(ingredients)) return 0;
+  
   return ingredients.reduce((total, ingredient) => {
     if (!ingredient.product) return total;
-    return total + calculateIngredientCost(ingredient.quantity, ingredient.product.unitPrice);
+    return total + calculateIngredientCost(ingredient.quantity, ingredient.product.unit_price);
   }, 0);
 };
 
@@ -57,7 +61,7 @@ export const calculateRecipeUnitCost = (
   totalCost: number,
   yield_: number
 ): number => {
-  if (yield_ <= 0) return 0;
+  if (!yield_ || yield_ <= 0) return 0;
   return totalCost / yield_;
 };
 
@@ -66,6 +70,8 @@ export const calculateSuggestedPrice = (
   unitCost: number,
   profit_margin: number
 ): number => {
+  if (typeof unitCost !== 'number' || typeof profit_margin !== 'number') return 0;
+  if (isNaN(unitCost) || isNaN(profit_margin)) return 0;
   return unitCost * (1 + profit_margin / 100);
 };
 
@@ -74,6 +80,8 @@ export const calculateUnitProfit = (
   suggestedPrice: number,
   unitCost: number
 ): number => {
+  if (typeof suggestedPrice !== 'number' || typeof unitCost !== 'number') return 0;
+  if (isNaN(suggestedPrice) || isNaN(unitCost)) return 0;
   return suggestedPrice - unitCost;
 };
 
@@ -82,12 +90,15 @@ export const calculateRealMargin = (
   unitProfit: number,
   suggestedPrice: number
 ): number => {
-  if (suggestedPrice <= 0) return 0;
+  if (!suggestedPrice || suggestedPrice <= 0) return 0;
+  if (typeof unitProfit !== 'number' || isNaN(unitProfit)) return 0;
   return (unitProfit / suggestedPrice) * 100;
 };
 
 // 🧾 Processa um produto individual para exibir preços
 export const processProductWithCalculations = (product: Product) => {
+  if (!product) return null;
+
   const unitPrice = calculateUnitPrice(
     product.total_value,
     product.total_quantity,
@@ -98,14 +109,16 @@ export const processProductWithCalculations = (product: Product) => {
 
   return {
     ...product,
-    unitPrice,
-    formattedUnitPrice: formatCurrency(unitPrice),
-    formattedStandardPrice: formatCurrency(standardPrice),
+    unit_price: unitPrice,
+    formatted_unit_price: formatCurrency(unitPrice),
+    formatted_standard_price: formatCurrency(standardPrice),
   };
 };
 
 // 🍦 Processa uma receita completa
 export const processRecipeWithCalculations = (recipe: Recipe) => {
+  if (!recipe) return null;
+  
   const totalCost = calculateRecipeTotalCost(recipe.ingredients);
   const unitCost = calculateRecipeUnitCost(totalCost, recipe.yield);
 
@@ -118,29 +131,29 @@ export const processRecipeWithCalculations = (recipe: Recipe) => {
 
 // ❄️ Processa um geladinho completo (produto final)
 export const processGeladinhoWithCalculations = (geladinho: Geladinho) => {
-  if (!geladinho.recipe) {
+  if (!geladinho || !geladinho.recipe) {
     return {
       ...geladinho,
-      totalCost: 0,
-      unitCost: 0,
-      suggestedPrice: 0,
-      unitProfit: 0,
-      realMargin: 0,
+      total_cost: 0,
+      unit_cost: 0,
+      suggested_price: 0,
+      unit_profit: 0,
+      real_margin: 0,
     };
   }
 
-  const totalCost = geladinho.recipe.totalCost;
-  const unitCost = geladinho.recipe.unitCost;
-  const suggestedPrice = calculateSuggestedPrice(unitCost, geladinho.profit_margin);
-  const unitProfit = calculateUnitProfit(suggestedPrice, unitCost);
-  const realMargin = calculateRealMargin(unitProfit, suggestedPrice);
+  const total_cost = geladinho.recipe.totalCost || 0;
+  const unit_cost = geladinho.recipe.unitCost || 0;
+  const suggested_price = calculateSuggestedPrice(unit_cost, geladinho.profit_margin);
+  const unit_profit = calculateUnitProfit(suggested_price, unit_cost);
+  const real_margin = calculateRealMargin(unit_profit, suggested_price);
 
   return {
     ...geladinho,
-    totalCost,
-    unitCost,
-    suggestedPrice,
-    unitProfit,
-    realMargin,
+    total_cost,
+    unit_cost,
+    suggested_price,
+    unit_profit,
+    real_margin,
   };
 };
