@@ -55,7 +55,7 @@ export interface GeladinhoFormData {
   prepTime?: number;
   freezingTemp?: number;
   notes?: string;
-  imageUrl?: string;
+  image_url?: string;
 }
 
 const categoryOptions = [
@@ -95,7 +95,7 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
       prepTime: defaultValues?.prepTime || undefined,
       freezingTemp: defaultValues?.freezingTemp || undefined,
       notes: defaultValues?.notes || '',
-      imageUrl: defaultValues?.imageUrl || '',
+      image_url: defaultValues?.image_url || '',
     },
   });
   
@@ -252,8 +252,8 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
               label="URL da Imagem"
               placeholder="https://example.com/image.jpg"
               leftIcon={<Image size={18} />}
-              {...register('imageUrl')}
-              error={errors.imageUrl?.message}
+              {...register('image_url')}
+              error={errors.image_url?.message}
             />
           </div>
           

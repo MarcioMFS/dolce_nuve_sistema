@@ -149,9 +149,9 @@ export const GeladinhoList: React.FC<GeladinhoListProps> = ({ geladinhos }) => {
             >
               <Card className="h-full hover:shadow-md transition-shadow overflow-hidden flex flex-col">
                 <div className="relative h-32 bg-gradient-to-r from-primary-500 to-secondary-500">
-                  {geladinho.imageUrl && (
+                  {geladinho.image_url && (
                     <img
-                      src={geladinho.imageUrl}
+                      src={geladinho.image_url}
                       alt={geladinho.name}
                       className="absolute inset-0 w-full h-full object-cover"
                     />

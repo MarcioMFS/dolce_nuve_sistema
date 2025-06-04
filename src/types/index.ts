@@ -52,7 +52,7 @@ export interface Geladinho {
   prepTime?: number;
   freezingTemp?: number;
   notes?: string;
-  imageUrl?: string;
+  image_url?: string;
   created_at: string;
   updated_at: string;
   recipe?: RecipeWithCalculations;
