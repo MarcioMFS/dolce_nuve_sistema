@@ -76,12 +76,12 @@ export const RecipeList: React.FC<RecipeListProps> = ({ recipes }) => {
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="text-sm text-gray-700">Custo Total</div>
-                    <div className="font-medium">{formatCurrency(recipe.totalCost)}</div>
+                    <div className="font-medium">{formatCurrency(recipe.total_cost)}</div>
                   </div>
                   
                   <div className="flex items-center justify-between mb-4">
                     <div className="text-sm text-gray-700">Custo por Unidade</div>
-                    <div className="font-bold text-primary-600">{formatCurrency(recipe.unitCost)}</div>
+                    <div className="font-bold text-primary-600">{formatCurrency(recipe.unit_cost)}</div>
                   </div>
                   
                   <div className="space-y-1">
