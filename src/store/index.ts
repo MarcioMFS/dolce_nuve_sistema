@@ -228,12 +228,15 @@ export const useStore = create<StoreState>()(
       },
 
       updateRecipe: async (id, updatedFields) => {
-        const { data, error } = await supabase
+        const updateData = { ...updatedFields } as Partial<Recipe> & {
+          ingredients?: Omit<Ingredient, 'id' | 'product'>[];
+        };
+        delete updateData.ingredients;
+
+        const { error } = await supabase
           .from('recipes')
-          .update(updatedFields)
-          .eq('id', id)
-          .select()
-          .single();
+          .update(updateData)
+          .eq('id', id);
         
         if (error) {
           console.error('Error updating recipe:', error);
