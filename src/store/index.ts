@@ -73,13 +73,16 @@ export const useStore = create<StoreState>()(
       },
 
       addProduct: async (product) => {
-        const processedProduct = processProductWithCalculations(product);
+        // Remove calculated fields before inserting
         const { data, error } = await supabase
           .from('products')
           .insert([{
-            ...product,
-            unit_price: processedProduct?.unit_price,
-            standard_price: processedProduct?.standard_price
+            name: product.name,
+            unit_of_measure: product.unit_of_measure,
+            total_quantity: product.total_quantity,
+            total_value: product.total_value,
+            purchase_date: product.purchase_date,
+            supplier: product.supplier
           }])
           .select()
           .single();
@@ -96,18 +99,18 @@ export const useStore = create<StoreState>()(
       },
 
       updateProduct: async (id, updatedFields) => {
-        const processedProduct = processProductWithCalculations({
-          ...get().getProduct(id),
+        // Remove calculated fields before updating
+        const updateData = {
           ...updatedFields,
-        });
+        };
+        
+        // Ensure calculated fields are not sent to the database
+        delete (updateData as any).unit_price;
+        delete (updateData as any).standard_price;
 
         const { data, error } = await supabase
           .from('products')
-          .update({
-            ...updatedFields,
-            unit_price: processedProduct?.unit_price,
-            standard_price: processedProduct?.standard_price
-          })
+          .update(updateData)
           .eq('id', id)
           .select()
           .single();
