@@ -1,11 +1,11 @@
 import React from 'react';
 import { useStore } from '../store';
 import { DashboardCards } from '../components/dashboard/DashboardCards';
-import { ProfitMarginChart } from '../components/dashboard/ProfitMarginChart';
-import { TopGeladinhosList } from '../components/dashboard/TopGeladinhosList';
+import { SalesChart } from '../components/dashboard/SalesChart';
+import { TopSellingList } from '../components/dashboard/TopSellingList';
 
 export const Dashboard: React.FC = () => {
-  const { products, recipes, geladinhos } = useStore();
+  const { products, recipes, geladinhos, sales, monthlySales } = useStore();
 
   return (
     <div className="space-y-6">
@@ -20,8 +20,8 @@ export const Dashboard: React.FC = () => {
       />
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ProfitMarginChart geladinhos={geladinhos} />
-        <TopGeladinhosList geladinhos={geladinhos} />
+        <SalesChart monthlySales={monthlySales} />
+        <TopSellingList sales={sales} geladinhos={geladinhos} />
       </div>
     </div>
   );
