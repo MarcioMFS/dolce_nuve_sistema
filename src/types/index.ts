@@ -12,10 +12,13 @@ export interface Product {
   supplier?: string;
   created_at: string;
   updated_at: string;
+  unit_price?: number;
+  standard_price?: number;
 }
 
 export interface ProductWithCalculations extends Product {
   unit_price: number;
+  standard_price: number;
   formatted_unit_price: string;
   formatted_standard_price: string;
 }
@@ -37,8 +40,8 @@ export interface Recipe {
 }
 
 export interface RecipeWithCalculations extends Recipe {
-  totalCost: number;
-  unitCost: number;
+  total_cost: number;
+  unit_cost: number;
 }
 
 export interface Geladinho {
