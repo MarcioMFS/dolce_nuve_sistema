@@ -15,6 +15,7 @@ import {
   processRecipeWithCalculations, 
   processGeladinhoWithCalculations 
 } from '../utils/calculations';
+import { supabase } from '../lib/supabase';
 
 interface StoreState {
   products: ProductWithCalculations[];
@@ -22,27 +23,30 @@ interface StoreState {
   geladinhos: GeladinhoWithCalculations[];
 
   // Product actions
-  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  updateProduct: (id: string, product: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
+  addProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
   getProduct: (id: string) => ProductWithCalculations | undefined;
+  fetchProducts: () => Promise<void>;
 
   // Recipe actions
-  addRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  updateRecipe: (id: string, recipe: Partial<Recipe>) => void;
-  deleteRecipe: (id: string) => void;
+  addRecipe: (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateRecipe: (id: string, recipe: Partial<Recipe>) => Promise<void>;
+  deleteRecipe: (id: string) => Promise<void>;
   getRecipe: (id: string) => RecipeWithCalculations | undefined;
+  fetchRecipes: () => Promise<void>;
   
   // Ingredient actions
-  addIngredientToRecipe: (recipeId: string, ingredient: Omit<Ingredient, 'id'>) => void;
-  updateIngredient: (recipeId: string, ingredientId: string, ingredient: Partial<Ingredient>) => void;
-  removeIngredientFromRecipe: (recipeId: string, ingredientId: string) => void;
+  addIngredientToRecipe: (recipeId: string, ingredient: Omit<Ingredient, 'id'>) => Promise<void>;
+  updateIngredient: (recipeId: string, ingredientId: string, ingredient: Partial<Ingredient>) => Promise<void>;
+  removeIngredientFromRecipe: (recipeId: string, ingredientId: string) => Promise<void>;
 
   // Geladinho actions
-  addGeladinho: (geladinho: Omit<Geladinho, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  updateGeladinho: (id: string, geladinho: Partial<Geladinho>) => void;
-  deleteGeladinho: (id: string) => void;
+  addGeladinho: (geladinho: Omit<Geladinho, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateGeladinho: (id: string, geladinho: Partial<Geladinho>) => Promise<void>;
+  deleteGeladinho: (id: string) => Promise<void>;
   getGeladinho: (id: string) => GeladinhoWithCalculations | undefined;
+  fetchGeladinhos: () => Promise<void>;
 }
 
 export const useStore = create<StoreState>()(
@@ -53,91 +57,81 @@ export const useStore = create<StoreState>()(
       geladinhos: [],
 
       // Product actions
-      addProduct: (product) => {
-        const now = new Date().toISOString();
-        const newProduct = {
-          id: uuidv4(),
-          ...product,
-          createdAt: now,
-          updatedAt: now,
-        };
+      fetchProducts: async () => {
+        const { data: products, error } = await supabase
+          .from('products')
+          .select('*')
+          .order('name');
         
-        const processedProduct = processProductWithCalculations(newProduct);
+        if (error) {
+          console.error('Error fetching products:', error);
+          return;
+        }
         
+        const processedProducts = products.map(processProductWithCalculations);
+        set({ products: processedProducts });
+      },
+
+      addProduct: async (product) => {
+        const { data, error } = await supabase
+          .from('products')
+          .insert([product])
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('Error adding product:', error);
+          return;
+        }
+        
+        const processedProduct = processProductWithCalculations(data);
         set((state) => ({
           products: [...state.products, processedProduct],
         }));
       },
 
-      updateProduct: (id, updatedFields) => {
-        set((state) => {
-          const updatedProducts = state.products.map((product) => {
-            if (product.id === id) {
-              const updatedProduct = {
-                ...product,
-                ...updatedFields,
-                updatedAt: new Date().toISOString(),
-              };
-              return processProductWithCalculations(updatedProduct);
-            }
-            return product;
-          });
+      updateProduct: async (id, updatedFields) => {
+        const { data, error } = await supabase
+          .from('products')
+          .update(updatedFields)
+          .eq('id', id)
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('Error updating product:', error);
+          return;
+        }
+        
+        set((state) => ({
+          products: state.products.map((product) =>
+            product.id === id ? processProductWithCalculations(data) : product
+          ),
+        }));
 
-          // Update ingredients that use this product
-          const updatedRecipes = state.recipes.map((recipe) => {
-            const hasProductIngredient = recipe.ingredients.some(
-              (ingredient) => ingredient.productId === id
-            );
-
-            if (hasProductIngredient) {
-              const updatedIngredients = recipe.ingredients.map((ingredient) => {
-                if (ingredient.productId === id) {
-                  return {
-                    ...ingredient,
-                    product: updatedProducts.find((p) => p.id === id),
-                  };
-                }
-                return ingredient;
-              });
-
-              const updatedRecipe = {
-                ...recipe,
-                ingredients: updatedIngredients,
-                updatedAt: new Date().toISOString(),
-              };
-
-              return processRecipeWithCalculations(updatedRecipe);
-            }
-
-            return recipe;
-          });
-
-          // Update geladinhos that use the affected recipes
-          const updatedGeladinhos = state.geladinhos.map((geladinho) => {
-            const recipe = updatedRecipes.find((r) => r.id === geladinho.recipeId);
-            if (recipe) {
-              const updatedGeladinho = {
-                ...geladinho,
-                recipe,
-                updatedAt: new Date().toISOString(),
-              };
-              return processGeladinhoWithCalculations(updatedGeladinho);
-            }
-            return geladinho;
-          });
-
-          return {
-            products: updatedProducts,
-            recipes: updatedRecipes,
-            geladinhos: updatedGeladinhos,
-          };
-        });
+        // Fetch updated recipes and geladinhos since they might be affected
+        await get().fetchRecipes();
+        await get().fetchGeladinhos();
       },
 
-      deleteProduct: (id) => {
+      deleteProduct: async (id) => {
+        const { error } = await supabase
+          .from('products')
+          .delete()
+          .eq('id', id);
+        
+        if (error) {
+          console.error('Error deleting product:', error);
+          return;
+        }
+        
         set((state) => ({
           products: state.products.filter((product) => product.id !== id),
         }));
+
+        // Fetch updated recipes and geladinhos since they might be affected
+        await get().fetchRecipes();
+        await get().fetchGeladinhos();
       },
 
       getProduct: (id) => {
@@ -145,75 +139,132 @@ export const useStore = create<StoreState>()(
       },
 
       // Recipe actions
-      addRecipe: (recipe) => {
-        const now = new Date().toISOString();
+      fetchRecipes: async () => {
+        const { data: recipes, error } = await supabase
+          .from('recipes')
+          .select(`
+            *,
+            ingredients:recipe_ingredients (
+              id,
+              product_id,
+              quantity,
+              products (*)
+            )
+          `)
+          .order('name');
         
-        // Get full product details for each ingredient
-        const ingredientsWithProducts = recipe.ingredients.map((ingredient) => {
-          const product = get().products.find((p) => p.id === ingredient.productId);
-          return {
-            ...ingredient,
-            id: uuidv4(),
-            product,
+        if (error) {
+          console.error('Error fetching recipes:', error);
+          return;
+        }
+        
+        const processedRecipes = recipes.map((recipe) => {
+          const formattedRecipe = {
+            ...recipe,
+            ingredients: recipe.ingredients.map((ingredient: any) => ({
+              id: ingredient.id,
+              productId: ingredient.product_id,
+              quantity: ingredient.quantity,
+              product: ingredient.products ? processProductWithCalculations(ingredient.products) : undefined,
+            })),
           };
+          return processRecipeWithCalculations(formattedRecipe);
         });
         
-        const newRecipe = {
-          id: uuidv4(),
-          ...recipe,
-          ingredients: ingredientsWithProducts,
-          createdAt: now,
-          updatedAt: now,
-        };
+        set({ recipes: processedRecipes });
+      },
+
+      addRecipe: async (recipe) => {
+        // First create the recipe
+        const { data: newRecipe, error: recipeError } = await supabase
+          .from('recipes')
+          .insert([{
+            name: recipe.name,
+            yield: recipe.yield,
+          }])
+          .select()
+          .single();
         
-        const processedRecipe = processRecipeWithCalculations(newRecipe);
-        
-        set((state) => ({
-          recipes: [...state.recipes, processedRecipe],
+        if (recipeError) {
+          console.error('Error adding recipe:', recipeError);
+          return;
+        }
+
+        // Then add ingredients
+        const ingredients = recipe.ingredients.map((ingredient) => ({
+          recipe_id: newRecipe.id,
+          product_id: ingredient.productId,
+          quantity: ingredient.quantity,
         }));
+
+        const { error: ingredientsError } = await supabase
+          .from('recipe_ingredients')
+          .insert(ingredients);
+
+        if (ingredientsError) {
+          console.error('Error adding recipe ingredients:', ingredientsError);
+          return;
+        }
+
+        // Fetch all recipes to get the updated data
+        await get().fetchRecipes();
       },
 
-      updateRecipe: (id, updatedFields) => {
-        set((state) => {
-          const updatedRecipes = state.recipes.map((recipe) => {
-            if (recipe.id === id) {
-              const updatedRecipe = {
-                ...recipe,
-                ...updatedFields,
-                updatedAt: new Date().toISOString(),
-              };
-              return processRecipeWithCalculations(updatedRecipe);
-            }
-            return recipe;
-          });
+      updateRecipe: async (id, updatedFields) => {
+        const { data, error } = await supabase
+          .from('recipes')
+          .update(updatedFields)
+          .eq('id', id)
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('Error updating recipe:', error);
+          return;
+        }
 
-          // Update geladinhos that use this recipe
-          const updatedGeladinhos = state.geladinhos.map((geladinho) => {
-            if (geladinho.recipeId === id) {
-              const recipe = updatedRecipes.find((r) => r.id === id);
-              const updatedGeladinho = {
-                ...geladinho,
-                recipe,
-                updatedAt: new Date().toISOString(),
-              };
-              return processGeladinhoWithCalculations(updatedGeladinho);
-            }
-            return geladinho;
-          });
+        // If ingredients were updated, handle that separately
+        if (updatedFields.ingredients) {
+          // Delete existing ingredients
+          await supabase
+            .from('recipe_ingredients')
+            .delete()
+            .eq('recipe_id', id);
 
-          return {
-            recipes: updatedRecipes,
-            geladinhos: updatedGeladinhos,
-          };
-        });
+          // Add new ingredients
+          const ingredients = updatedFields.ingredients.map((ingredient) => ({
+            recipe_id: id,
+            product_id: ingredient.productId,
+            quantity: ingredient.quantity,
+          }));
+
+          await supabase
+            .from('recipe_ingredients')
+            .insert(ingredients);
+        }
+
+        // Fetch all recipes and geladinhos to get the updated data
+        await get().fetchRecipes();
+        await get().fetchGeladinhos();
       },
 
-      deleteRecipe: (id) => {
+      deleteRecipe: async (id) => {
+        const { error } = await supabase
+          .from('recipes')
+          .delete()
+          .eq('id', id);
+        
+        if (error) {
+          console.error('Error deleting recipe:', error);
+          return;
+        }
+        
         set((state) => ({
           recipes: state.recipes.filter((recipe) => recipe.id !== id),
-          // Also remove any geladinhos that use this recipe
-          geladinhos: state.geladinhos.filter((geladinho) => geladinho.recipeId !== id),
         }));
+
+        // Fetch updated geladinhos since they might be affected
+        await get().fetchGeladinhos();
       },
 
       getRecipe: (id) => {
@@ -221,187 +272,144 @@ export const useStore = create<StoreState>()(
       },
       
       // Ingredient actions
-      addIngredientToRecipe: (recipeId, ingredient) => {
-        set((state) => {
-          const product = state.products.find((p) => p.id === ingredient.productId);
-          
-          const updatedRecipes = state.recipes.map((recipe) => {
-            if (recipe.id === recipeId) {
-              const newIngredient = {
-                ...ingredient,
-                id: uuidv4(),
-                product,
-              };
-              
-              const updatedRecipe = {
-                ...recipe,
-                ingredients: [...recipe.ingredients, newIngredient],
-                updatedAt: new Date().toISOString(),
-              };
-              
-              return processRecipeWithCalculations(updatedRecipe);
-            }
-            return recipe;
-          });
-          
-          // Update geladinhos that use this recipe
-          const updatedGeladinhos = state.geladinhos.map((geladinho) => {
-            if (geladinho.recipeId === recipeId) {
-              const recipe = updatedRecipes.find((r) => r.id === recipeId);
-              const updatedGeladinho = {
-                ...geladinho,
-                recipe,
-                updatedAt: new Date().toISOString(),
-              };
-              return processGeladinhoWithCalculations(updatedGeladinho);
-            }
-            return geladinho;
-          });
-          
-          return {
-            recipes: updatedRecipes,
-            geladinhos: updatedGeladinhos,
-          };
-        });
+      addIngredientToRecipe: async (recipeId, ingredient) => {
+        const { error } = await supabase
+          .from('recipe_ingredients')
+          .insert([{
+            recipe_id: recipeId,
+            product_id: ingredient.productId,
+            quantity: ingredient.quantity,
+          }]);
+        
+        if (error) {
+          console.error('Error adding ingredient:', error);
+          return;
+        }
+
+        // Fetch all recipes and geladinhos to get the updated data
+        await get().fetchRecipes();
+        await get().fetchGeladinhos();
       },
       
-      updateIngredient: (recipeId, ingredientId, updatedFields) => {
-        set((state) => {
-          const updatedRecipes = state.recipes.map((recipe) => {
-            if (recipe.id === recipeId) {
-              const updatedIngredients = recipe.ingredients.map((ingredient) => {
-                if (ingredient.id === ingredientId) {
-                  // If productId changed, get the new product
-                  const productId = updatedFields.productId || ingredient.productId;
-                  const product = state.products.find((p) => p.id === productId);
-                  
-                  return {
-                    ...ingredient,
-                    ...updatedFields,
-                    product,
-                  };
-                }
-                return ingredient;
-              });
-              
-              const updatedRecipe = {
-                ...recipe,
-                ingredients: updatedIngredients,
-                updatedAt: new Date().toISOString(),
-              };
-              
-              return processRecipeWithCalculations(updatedRecipe);
-            }
-            return recipe;
-          });
-          
-          // Update geladinhos that use this recipe
-          const updatedGeladinhos = state.geladinhos.map((geladinho) => {
-            if (geladinho.recipeId === recipeId) {
-              const recipe = updatedRecipes.find((r) => r.id === recipeId);
-              const updatedGeladinho = {
-                ...geladinho,
-                recipe,
-                updatedAt: new Date().toISOString(),
-              };
-              return processGeladinhoWithCalculations(updatedGeladinho);
-            }
-            return geladinho;
-          });
-          
-          return {
-            recipes: updatedRecipes,
-            geladinhos: updatedGeladinhos,
-          };
-        });
+      updateIngredient: async (recipeId, ingredientId, updatedFields) => {
+        const { error } = await supabase
+          .from('recipe_ingredients')
+          .update({
+            product_id: updatedFields.productId,
+            quantity: updatedFields.quantity,
+          })
+          .eq('id', ingredientId);
+        
+        if (error) {
+          console.error('Error updating ingredient:', error);
+          return;
+        }
+
+        // Fetch all recipes and geladinhos to get the updated data
+        await get().fetchRecipes();
+        await get().fetchGeladinhos();
       },
       
-      removeIngredientFromRecipe: (recipeId, ingredientId) => {
-        set((state) => {
-          const updatedRecipes = state.recipes.map((recipe) => {
-            if (recipe.id === recipeId) {
-              const updatedRecipe = {
-                ...recipe,
-                ingredients: recipe.ingredients.filter((i) => i.id !== ingredientId),
-                updatedAt: new Date().toISOString(),
-              };
-              
-              return processRecipeWithCalculations(updatedRecipe);
-            }
-            return recipe;
-          });
-          
-          // Update geladinhos that use this recipe
-          const updatedGeladinhos = state.geladinhos.map((geladinho) => {
-            if (geladinho.recipeId === recipeId) {
-              const recipe = updatedRecipes.find((r) => r.id === recipeId);
-              const updatedGeladinho = {
-                ...geladinho,
-                recipe,
-                updatedAt: new Date().toISOString(),
-              };
-              return processGeladinhoWithCalculations(updatedGeladinho);
-            }
-            return geladinho;
-          });
-          
-          return {
-            recipes: updatedRecipes,
-            geladinhos: updatedGeladinhos,
-          };
-        });
+      removeIngredientFromRecipe: async (recipeId, ingredientId) => {
+        const { error } = await supabase
+          .from('recipe_ingredients')
+          .delete()
+          .eq('id', ingredientId);
+        
+        if (error) {
+          console.error('Error removing ingredient:', error);
+          return;
+        }
+
+        // Fetch all recipes and geladinhos to get the updated data
+        await get().fetchRecipes();
+        await get().fetchGeladinhos();
       },
 
       // Geladinho actions
-      addGeladinho: (geladinho) => {
-        const now = new Date().toISOString();
-        const recipe = get().recipes.find((r) => r.id === geladinho.recipeId);
+      fetchGeladinhos: async () => {
+        const { data: geladinhos, error } = await supabase
+          .from('geladinhos')
+          .select(`
+            *,
+            recipe:recipes (
+              *,
+              ingredients:recipe_ingredients (
+                id,
+                product_id,
+                quantity,
+                products (*)
+              )
+            )
+          `)
+          .order('name');
         
-        const newGeladinho = {
-          id: uuidv4(),
-          ...geladinho,
-          recipe,
-          createdAt: now,
-          updatedAt: now,
-        };
+        if (error) {
+          console.error('Error fetching geladinhos:', error);
+          return;
+        }
         
-        const processedGeladinho = processGeladinhoWithCalculations(newGeladinho);
-        
-        set((state) => ({
-          geladinhos: [...state.geladinhos, processedGeladinho],
-        }));
-      },
-
-      updateGeladinho: (id, updatedFields) => {
-        set((state) => {
-          let recipeToUse;
-          
-          // If recipeId is updated, get the new recipe
-          if (updatedFields.recipeId) {
-            recipeToUse = state.recipes.find((r) => r.id === updatedFields.recipeId);
-          }
-          
-          const updatedGeladinhos = state.geladinhos.map((geladinho) => {
-            if (geladinho.id === id) {
-              const updatedGeladinho = {
-                ...geladinho,
-                ...updatedFields,
-                // Only update recipe if recipeId changed
-                recipe: recipeToUse || geladinho.recipe,
-                updatedAt: new Date().toISOString(),
-              };
-              return processGeladinhoWithCalculations(updatedGeladinho);
-            }
-            return geladinho;
-          });
-          
-          return {
-            geladinhos: updatedGeladinhos,
+        const processedGeladinhos = geladinhos.map((geladinho) => {
+          const formattedGeladinho = {
+            ...geladinho,
+            recipe: geladinho.recipe ? {
+              ...geladinho.recipe,
+              ingredients: geladinho.recipe.ingredients.map((ingredient: any) => ({
+                id: ingredient.id,
+                productId: ingredient.product_id,
+                quantity: ingredient.quantity,
+                product: ingredient.products ? processProductWithCalculations(ingredient.products) : undefined,
+              })),
+            } : undefined,
           };
+          return processGeladinhoWithCalculations(formattedGeladinho);
         });
+        
+        set({ geladinhos: processedGeladinhos });
       },
 
-      deleteGeladinho: (id) => {
+      addGeladinho: async (geladinho) => {
+        const { data, error } = await supabase
+          .from('geladinhos')
+          .insert([geladinho])
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('Error adding geladinho:', error);
+          return;
+        }
+        
+        // Fetch all geladinhos to get the updated data with recipes
+        await get().fetchGeladinhos();
+      },
+
+      updateGeladinho: async (id, updatedFields) => {
+        const { error } = await supabase
+          .from('geladinhos')
+          .update(updatedFields)
+          .eq('id', id);
+        
+        if (error) {
+          console.error('Error updating geladinho:', error);
+          return;
+        }
+        
+        // Fetch all geladinhos to get the updated data with recipes
+        await get().fetchGeladinhos();
+      },
+
+      deleteGeladinho: async (id) => {
+        const { error } = await supabase
+          .from('geladinhos')
+          .delete()
+          .eq('id', id);
+        
+        if (error) {
+          console.error('Error deleting geladinho:', error);
+          return;
+        }
+        
         set((state) => ({
           geladinhos: state.geladinhos.filter((geladinho) => geladinho.id !== id),
         }));
@@ -416,3 +424,8 @@ export const useStore = create<StoreState>()(
     }
   )
 );
+
+// Fetch initial data
+useStore.getState().fetchProducts();
+useStore.getState().fetchRecipes();
+useStore.getState().fetchGeladinhos();
