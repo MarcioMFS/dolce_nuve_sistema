@@ -1,0 +1,41 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Layout } from './components/layout/Layout';
+import { Dashboard } from './pages/Dashboard';
+import { ProductsPage } from './pages/ProductsPage';
+import { ProductFormPage } from './pages/ProductFormPage';
+import { RecipesPage } from './pages/RecipesPage';
+import { RecipeFormPage } from './pages/RecipeFormPage';
+import { GeladinhosPage } from './pages/GeladinhosPage';
+import { GeladinhoFormPage } from './pages/GeladinhoFormPage';
+import { ReportsPage } from './pages/ReportsPage';
+
+function App() {
+  return (
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          
+          <Route path="/produtos" element={<ProductsPage />} />
+          <Route path="/produtos/novo" element={<ProductFormPage />} />
+          <Route path="/produtos/editar/:id" element={<ProductFormPage />} />
+          
+          <Route path="/receitas" element={<RecipesPage />} />
+          <Route path="/receitas/nova" element={<RecipeFormPage />} />
+          <Route path="/receitas/editar/:id" element={<RecipeFormPage />} />
+          
+          <Route path="/geladinhos" element={<GeladinhosPage />} />
+          <Route path="/geladinhos/novo" element={<GeladinhoFormPage />} />
+          <Route path="/geladinhos/editar/:id" element={<GeladinhoFormPage />} />
+          
+          <Route path="/relatorios" element={<ReportsPage />} />
+          
+          <Route path="*" element={<Navigate to="/\" replace />} />
+        </Routes>
+      </Layout>
+    </Router>
+  );
+}
+
+export default App;
