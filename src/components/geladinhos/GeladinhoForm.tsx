@@ -106,7 +106,7 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
     (recipe) => recipe.id === watchedRecipeId
   ) as RecipeWithCalculations | undefined;
   
-  const unitCost = selectedRecipe?.unitCost || 0;
+  const unitCost = selectedRecipe?.unit_cost || 0;
   const suggestedPrice = unitCost * (1 + watchedProfitMargin / 100);
   const unitProfit = suggestedPrice - unitCost;
   const realMargin = suggestedPrice > 0 ? (unitProfit / suggestedPrice) * 100 : 0;

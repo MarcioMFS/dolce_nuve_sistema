@@ -22,10 +22,10 @@ export const ReportsPage: React.FC = () => {
       ...activeGeladinhos.map(g => [
         g.name,
         g.category,
-        g.unitCost.toFixed(2),
-        g.suggestedPrice.toFixed(2),
-        g.unitProfit.toFixed(2),
-        `${g.realMargin.toFixed(1)}%`
+        g.unit_cost.toFixed(2),
+        g.suggested_price.toFixed(2),
+        g.unit_profit.toFixed(2),
+        `${g.real_margin.toFixed(1)}%`
       ])
     ]
       .map(row => row.join(','))
@@ -47,8 +47,8 @@ export const ReportsPage: React.FC = () => {
         p.unit_of_measure,
         p.total_quantity.toString(),
         p.total_value.toFixed(2),
-        p.unitPrice.toFixed(4),
-        p.unit_of_measure === 'unidades' ? '' : (p.unitPrice * 1000).toFixed(2)
+        p.unit_price.toFixed(4),
+        p.unit_of_measure === 'unidades' ? '' : (p.unit_price * 1000).toFixed(2)
       ])
     ]
       .map(row => row.join(','))
@@ -64,12 +64,12 @@ export const ReportsPage: React.FC = () => {
   
   const handleExportRecipes = () => {
     const csvContent = recipes.map(recipe => {
-      const header = `"${recipe.name}","Rendimento: ${recipe.yield} unidades","Custo Total: ${formatCurrency(recipe.totalCost)}","Custo por Unidade: ${formatCurrency(recipe.unitCost)}"`;
+      const header = `"${recipe.name}","Rendimento: ${recipe.yield} unidades","Custo Total: ${formatCurrency(recipe.total_cost)}","Custo por Unidade: ${formatCurrency(recipe.unit_cost)}"`;
       
       const ingredients = recipe.ingredients.map(ing => {
         const product = ing.product;
         if (!product) return `"Ingrediente não encontrado","0g","${formatCurrency(0)}"`;
-        return `"${product.name}","${ing.quantity}g","${formatCurrency(product.unitPrice * ing.quantity)}"`;
+        return `"${product.name}","${ing.quantity}g","${formatCurrency(product.unit_price * ing.quantity)}"`;
       }).join('\n');
       
       return `${header}\n"Ingrediente","Quantidade","Custo"\n${ingredients}\n\n`;

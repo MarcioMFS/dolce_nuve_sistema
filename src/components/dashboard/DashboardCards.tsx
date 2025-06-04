@@ -42,14 +42,14 @@ export const DashboardCards: React.FC<DashboardCardsProps> = ({
   
   // Find most profitable geladinho
   const mostProfitable = geladinhos.length > 0
-    ? geladinhos.reduce((prev, current) => 
-        ((prev.unitProfit || 0) > (current.unitProfit || 0)) ? prev : current
+    ? geladinhos.reduce((prev, current) =>
+        ((prev.unit_profit || 0) > (current.unit_profit || 0)) ? prev : current
       )
     : null;
   
   // Calculate average cost per unit
   const avgCost = geladinhos.length > 0
-    ? geladinhos.reduce((sum, g) => sum + (g.unitCost || 0), 0) / geladinhos.length
+    ? geladinhos.reduce((sum, g) => sum + (g.unit_cost || 0), 0) / geladinhos.length
     : 0;
 
   return (
@@ -155,7 +155,7 @@ export const DashboardCards: React.FC<DashboardCardsProps> = ({
             <div>
               <p className="text-sm font-medium text-gray-500">Mais Lucrativo</p>
               <p className="text-3xl font-bold text-gray-900">
-                {mostProfitable ? formatCurrency(mostProfitable.unitProfit || 0) : '-'}
+                {mostProfitable ? formatCurrency(mostProfitable.unit_profit || 0) : '-'}
               </p>
             </div>
             <div className="p-3 rounded-full bg-primary-100 text-primary-600">
@@ -164,7 +164,7 @@ export const DashboardCards: React.FC<DashboardCardsProps> = ({
           </div>
           <div className="mt-4 text-sm text-gray-600">
             {mostProfitable 
-              ? `${mostProfitable.name} (${(mostProfitable.realMargin || 0).toFixed(1)}% de margem)` 
+              ? `${mostProfitable.name} (${(mostProfitable.real_margin || 0).toFixed(1)}% de margem)`
               : 'Nenhum geladinho cadastrado ainda'}
           </div>
         </CardContent>
