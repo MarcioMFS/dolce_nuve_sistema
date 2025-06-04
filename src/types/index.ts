@@ -49,8 +49,8 @@ export interface Geladinho {
   profit_margin: number;
   status: Status;
   description?: string;
-  prepTime?: number;
-  freezingTemp?: number;
+  prep_time?: number;
+  freezing_temp?: number;
   notes?: string;
   image_url?: string;
   created_at: string;
