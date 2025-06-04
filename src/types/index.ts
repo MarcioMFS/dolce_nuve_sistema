@@ -44,7 +44,7 @@ export interface RecipeWithCalculations extends Recipe {
 export interface Geladinho {
   id: string;
   name: string;
-  recipeId: string;
+  recipe_id: string;
   category: Category;
   profit_margin: number;
   status: Status;

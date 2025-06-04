@@ -87,7 +87,7 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
   } = useForm<GeladinhoFormData>({
     defaultValues: {
       name: defaultValues?.name || '',
-       recipe_id: defaultValues?. recipe_id || '',
+      recipe_id: defaultValues?.recipe_id || '',
       category: defaultValues?.category || 'Cremoso',
       profit_margin: defaultValues?.profit_margin || 50,
       status: defaultValues?.status || 'Ativo',
@@ -99,11 +99,11 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
     },
   });
   
-  const watched recipe_id = watch(' recipe_id');
+  const watchedRecipeId = watch('recipe_id');
   const watchedProfitMargin = watch('profit_margin');
   
   const selectedRecipe = recipes.find(
-    (recipe) => recipe.id === watched recipe_id
+    (recipe) => recipe.id === watchedRecipeId
   ) as RecipeWithCalculations | undefined;
   
   const unitCost = selectedRecipe?.unitCost || 0;
@@ -161,7 +161,7 @@ export const GeladinhoForm: React.FC<GeladinhoFormProps> = ({
               {...register('recipe_id', {
                 required: 'Receita é obrigatória',
               })}
-              error={errors.recipe_Id?.message}
+              error={errors.recipe_id?.message}
             />
           </div>
           
