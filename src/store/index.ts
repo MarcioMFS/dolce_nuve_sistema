@@ -6,9 +6,11 @@ import {
   ProductWithCalculations, 
   Recipe, 
   RecipeWithCalculations, 
-  Geladinho, 
+  Geladinho,
   GeladinhoWithCalculations,
-  Ingredient
+  Ingredient,
+  Sale,
+  MonthlySales
 } from '../types';
 import { 
   processProductWithCalculations, 
@@ -21,6 +23,8 @@ interface StoreState {
   products: ProductWithCalculations[];
   recipes: RecipeWithCalculations[];
   geladinhos: GeladinhoWithCalculations[];
+  sales: Sale[];
+  monthlySales: MonthlySales[];
 
   // Product actions
   addProduct: (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
@@ -47,6 +51,14 @@ interface StoreState {
   deleteGeladinho: (id: string) => Promise<void>;
   getGeladinho: (id: string) => GeladinhoWithCalculations | undefined;
   fetchGeladinhos: () => Promise<void>;
+
+  // Sales actions
+  addSale: (sale: Omit<Sale, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  updateSale: (id: string, sale: Partial<Sale>) => Promise<void>;
+  deleteSale: (id: string) => Promise<void>;
+  getSale: (id: string) => Sale | undefined;
+  fetchSales: () => Promise<void>;
+  fetchMonthlySales: () => Promise<void>;
 }
 
 export const useStore = create<StoreState>()(
@@ -55,6 +67,8 @@ export const useStore = create<StoreState>()(
       products: [],
       recipes: [],
       geladinhos: [],
+      sales: [],
+      monthlySales: [],
 
       // Product actions
       fetchProducts: async () => {
@@ -438,6 +452,87 @@ export const useStore = create<StoreState>()(
       getGeladinho: (id) => {
         return get().geladinhos.find((geladinho) => geladinho.id === id);
       },
+
+      // Sales actions
+      fetchSales: async () => {
+        const { data, error } = await supabase
+          .from('sales')
+          .select(`*, geladinho:geladinhos(*)`)
+          .order('sale_date', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching sales:', error);
+          return;
+        }
+
+        const processed = data.map((sale: any) => ({
+          ...sale,
+          geladinho: sale.geladinho
+            ? processGeladinhoWithCalculations(sale.geladinho)
+            : undefined,
+        }));
+
+        set({ sales: processed });
+      },
+
+      addSale: async (sale) => {
+        const { error } = await supabase.from('sales').insert([sale]);
+
+        if (error) {
+          console.error('Error adding sale:', error);
+          return;
+        }
+
+        await get().fetchSales();
+        await get().fetchMonthlySales();
+      },
+
+      updateSale: async (id, updatedFields) => {
+        const { error } = await supabase
+          .from('sales')
+          .update(updatedFields)
+          .eq('id', id);
+
+        if (error) {
+          console.error('Error updating sale:', error);
+          return;
+        }
+
+        await get().fetchSales();
+        await get().fetchMonthlySales();
+      },
+
+      deleteSale: async (id) => {
+        const { error } = await supabase.from('sales').delete().eq('id', id);
+
+        if (error) {
+          console.error('Error deleting sale:', error);
+          return;
+        }
+
+        set((state) => ({
+          sales: state.sales.filter((sale) => sale.id !== id),
+        }));
+        await get().fetchMonthlySales();
+      },
+
+      getSale: (id) => {
+        return get().sales.find((sale) => sale.id === id);
+      },
+
+      fetchMonthlySales: async () => {
+        const { data, error } = await supabase
+          .from('monthly_sales')
+          .select('*')
+          .order('month');
+
+        if (error) {
+          console.error('Error fetching monthly sales:', error);
+          return;
+        }
+
+        set({ monthlySales: data });
+      },
     }),
     {
       name: 'geladinho-store',
@@ -449,3 +544,5 @@ export const useStore = create<StoreState>()(
 useStore.getState().fetchProducts();
 useStore.getState().fetchRecipes();
 useStore.getState().fetchGeladinhos();
+useStore.getState().fetchSales();
+useStore.getState().fetchMonthlySales();

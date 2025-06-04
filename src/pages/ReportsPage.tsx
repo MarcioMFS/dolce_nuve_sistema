@@ -12,7 +12,7 @@ import { Download, FileBarChart } from 'lucide-react';
 import { formatCurrency } from '../utils/calculations';
 
 export const ReportsPage: React.FC = () => {
-  const { products, recipes, geladinhos } = useStore();
+  const { products, recipes, geladinhos, monthlySales } = useStore();
   
   const handleExportPricing = () => {
     const activeGeladinhos = geladinhos.filter(g => g.status === 'Ativo');
@@ -142,31 +142,66 @@ export const ReportsPage: React.FC = () => {
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Receitas Detalhadas</CardTitle>
-            <CardDescription>
-              Relatório detalhado de todas as receitas e seus ingredientes.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center text-sm">
-                <span>Total de receitas:</span>
-                <span className="font-medium">{recipes.length}</span>
-              </div>
-              
-              <Button 
-                onClick={handleExportRecipes}
-                leftIcon={<Download size={18} />}
-                fullWidth
-                disabled={recipes.length === 0}
-              >
-                Exportar CSV
-              </Button>
+      <Card>
+        <CardHeader>
+          <CardTitle>Receitas Detalhadas</CardTitle>
+          <CardDescription>
+            Relatório detalhado de todas as receitas e seus ingredientes.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center text-sm">
+              <span>Total de receitas:</span>
+              <span className="font-medium">{recipes.length}</span>
             </div>
-          </CardContent>
-        </Card>
+
+            <Button
+              onClick={handleExportRecipes}
+              leftIcon={<Download size={18} />}
+              fullWidth
+              disabled={recipes.length === 0}
+            >
+              Exportar CSV
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Vendas Mensais</CardTitle>
+          <CardDescription>Resumo consolidado das vendas registradas.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {monthlySales.length === 0 ? (
+            <p className="text-sm text-gray-500">Nenhuma venda registrada.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mês</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total de Vendas</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {monthlySales.map((ms) => (
+                    <tr key={ms.month}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(ms.month).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                        {formatCurrency(ms.total_sales)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
       </div>
       
       <div className="mt-8">
