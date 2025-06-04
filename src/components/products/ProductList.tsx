@@ -103,10 +103,10 @@ export const ProductList: React.FC<ProductListProps> = ({ products }) => {
                     Quantidade
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Preço Unitário
+                    Preço por {unitLabels.gramas}/ml/un
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Preço Padrão
+                    Preço por {standardUnitLabels.gramas}/L/un
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Data da Compra
@@ -134,10 +134,10 @@ export const ProductList: React.FC<ProductListProps> = ({ products }) => {
                       {product.total_quantity} {unitLabels[product.unit_of_measure]}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.formattedUnitPrice}/{unitLabels[product.unit_of_measure]}
+                      {formatCurrency(product.unit_price)}/{unitLabels[product.unit_of_measure]}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      {product.formattedStandardPrice}/{standardUnitLabels[product.unit_of_measure]}
+                      {formatCurrency(product.standard_price)}/{standardUnitLabels[product.unit_of_measure]}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(product.purchase_date).toLocaleDateString('pt-BR')}
