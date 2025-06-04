@@ -28,7 +28,7 @@ export interface ProductFormData {
   unitOfMeasure: UnitOfMeasure;
   totalQuantity: number;
   totalValue: number;
-  purchaseDate: string;
+  purchase_date: string;
   supplier?: string;
 }
 
@@ -54,8 +54,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       unitOfMeasure: defaultValues?.unitOfMeasure || 'gramas',
       totalQuantity: defaultValues?.totalQuantity || 0,
       totalValue: defaultValues?.totalValue || 0,
-      purchaseDate: defaultValues?.purchaseDate 
-        ? format(new Date(defaultValues.purchaseDate), 'yyyy-MM-dd') 
+      purchase_date: defaultValues?.purchase_date 
+        ? format(new Date(defaultValues.purchase_date), 'yyyy-MM-dd') 
         : format(new Date(), 'yyyy-MM-dd'),
       supplier: defaultValues?.supplier || '',
     },
@@ -151,10 +151,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               label="Data da Compra"
               type="date"
               leftIcon={<Calendar size={18} />}
-              {...register('purchaseDate', {
+              {...register('purchase_date', {
                 required: 'Data da compra é obrigatória',
               })}
-              error={errors.purchaseDate?.message}
+              error={errors.purchase_date?.message}
             />
             
             <Input

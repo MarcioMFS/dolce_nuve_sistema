@@ -8,7 +8,7 @@ export interface Product {
   unitOfMeasure: UnitOfMeasure;
   totalQuantity: number;
   totalValue: number;
-  purchaseDate: string;
+  purchase_date: string;
   supplier?: string;
   createdAt: string;
   updatedAt: string;
