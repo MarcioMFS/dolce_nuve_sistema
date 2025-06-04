@@ -15,14 +15,14 @@ export interface Product {
 }
 
 export interface ProductWithCalculations extends Product {
-  unitPrice: number;
-  formattedUnitPrice: string;
-  formattedStandardPrice: string;
+  unit_price: number;
+  formatted_unit_price: string;
+  formatted_standard_price: string;
 }
 
 export interface Ingredient {
   id: string;
-  productId: string;
+  product_id: string;
   quantity: number;
   product?: ProductWithCalculations;
 }
@@ -59,9 +59,9 @@ export interface Geladinho {
 }
 
 export interface GeladinhoWithCalculations extends Geladinho {
-  totalCost: number;
-  unitCost: number;
-  suggestedPrice: number;
-  unitProfit: number;
-  realMargin: number;
+  total_cost: number;
+  unit_cost: number;
+  suggested_price: number;
+  unit_profit: number;
+  real_margin: number;
 }
