@@ -15,7 +15,7 @@ interface ProductListProps {
 
 const unitLabels: Record<UnitOfMeasure, string> = {
   gramas: 'g',
-  litros: 'L',
+  litros: 'ml',
   unidades: 'un',
 };
 
@@ -103,10 +103,10 @@ export const ProductList: React.FC<ProductListProps> = ({ products }) => {
                     Quantidade
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Preço por {unitLabels.gramas}/ml/un
+                    Preço por g/ml/un
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Preço por {standardUnitLabels.gramas}/L/un
+                    Preço por kg/L/un
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Data da Compra

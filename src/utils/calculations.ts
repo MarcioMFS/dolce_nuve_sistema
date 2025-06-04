@@ -19,12 +19,13 @@ export const calculateStandardPrice = (
 ): number => {
   switch (unit_of_measure) {
     case 'gramas':
-      return unitPrice * 1000; // para kg
+      return unitPrice * 1000; // Converte para preço por kg
     case 'litros':
-      return unitPrice * 1000; // para L
+      return unitPrice * 1000; // Converte para preço por L
     case 'unidades':
+      return unitPrice; // Mantém o mesmo preço para unidades
     default:
-      return unitPrice; // permanece como unidade
+      return 0;
   }
 };
 
