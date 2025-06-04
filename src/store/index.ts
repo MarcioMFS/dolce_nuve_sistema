@@ -457,7 +457,7 @@ export const useStore = create<StoreState>()(
       fetchSales: async () => {
         const { data, error } = await supabase
           .from('sales')
-          .select(`*, geladinho:geladinhos(*)`)
+          .select('*, geladinho:geladinho_id(*)')
           .order('sale_date', { ascending: false });
 
         if (error) {
