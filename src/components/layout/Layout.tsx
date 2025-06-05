@@ -83,7 +83,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="relative bg-white w-64 h-full overflow-y-auto shadow-xl">
           <div className="p-6 flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <img src="/#FDEFC9.png" alt="Dolce Nuve" className="h-12 w-12" />
+              <img src="/logo.png" alt="Dolce Nuve" className="h-12 w-12" />
               <span className="text-xl font-bold text-primary-400">Dolce Nuve</span>
             </div>
             <button
@@ -134,7 +134,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="flex flex-col h-0 flex-1 bg-white shadow-md">
             <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
               <div className="flex items-center justify-center px-4 mb-6">
-                <img src="/#FDEFC9.png" alt="Dolce Nuve" className="h-12 w-12 mr-2" />
+                <img src="/logo.png" alt="Dolce Nuve" className="h-12 w-12 mr-2" />
                 <span className="text-xl font-bold text-primary-400">Dolce Nuve</span>
               </div>
               <nav className="p-3 space-y-1">
