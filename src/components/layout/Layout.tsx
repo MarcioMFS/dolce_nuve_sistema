@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 import { 
   Home, 
@@ -42,10 +42,10 @@ const NavItem: React.FC<NavItemProps> = ({ to, label, icon, isActive }) => {
 };
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children }) => {
+export const Layout: React.FC<LayoutProps> = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
@@ -168,7 +168,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="flex flex-col flex-1 overflow-hidden">
         <main className="flex-1 relative overflow-y-auto focus:outline-none">
           <div className="py-6 sm:px-6 lg:px-8">
-            {children}
+            <Outlet />
           </div>
         </main>
       </div>

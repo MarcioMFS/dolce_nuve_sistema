@@ -21,25 +21,26 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         
         <Route
+          path="/"
           element={
             <AuthGuard>
               <Layout />
             </AuthGuard>
           }
         >
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/produtos" element={<ProductsPage />} />
-          <Route path="/produtos/novo" element={<ProductFormPage />} />
-          <Route path="/produtos/editar/:id" element={<ProductFormPage />} />
-          <Route path="/receitas" element={<RecipesPage />} />
-          <Route path="/receitas/nova" element={<RecipeFormPage />} />
-          <Route path="/receitas/editar/:id" element={<RecipeFormPage />} />
-          <Route path="/geladinhos" element={<GeladinhosPage />} />
-          <Route path="/geladinhos/novo" element={<GeladinhoFormPage />} />
-          <Route path="/geladinhos/editar/:id" element={<GeladinhoFormPage />} />
-          <Route path="/vendas" element={<SalesPage />} />
-          <Route path="/vendas/nova" element={<SaleFormPage />} />
-          <Route path="/relatorios" element={<ReportsPage />} />
+          <Route index element={<Dashboard />} />
+          <Route path="produtos" element={<ProductsPage />} />
+          <Route path="produtos/novo" element={<ProductFormPage />} />
+          <Route path="produtos/editar/:id" element={<ProductFormPage />} />
+          <Route path="receitas" element={<RecipesPage />} />
+          <Route path="receitas/nova" element={<RecipeFormPage />} />
+          <Route path="receitas/editar/:id" element={<RecipeFormPage />} />
+          <Route path="geladinhos" element={<GeladinhosPage />} />
+          <Route path="geladinhos/novo" element={<GeladinhoFormPage />} />
+          <Route path="geladinhos/editar/:id" element={<GeladinhoFormPage />} />
+          <Route path="vendas" element={<SalesPage />} />
+          <Route path="vendas/nova" element={<SaleFormPage />} />
+          <Route path="relatorios" element={<ReportsPage />} />
         </Route>
         
         <Route path="*" element={<Navigate to="/" replace />} />
