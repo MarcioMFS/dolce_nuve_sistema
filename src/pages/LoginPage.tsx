@@ -29,7 +29,7 @@ export const LoginPage: React.FC = () => {
       <Card className="w-full max-w-md">
         <form onSubmit={handleSubmit}>
           <CardHeader className="text-center">
-            <img src="/logo.png" alt="Dolce Nuve" className="h-24 w-24 mx-auto mb-4" />
+            <img src="/logodolcenuve.svg" alt="Dolce Nuve" className="h-24 w-24 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-gray-900">Painel Dolce Nuve</h1>
             <p className="text-sm text-gray-500 mt-2">Faça login para acessar o sistema</p>
           </CardHeader>

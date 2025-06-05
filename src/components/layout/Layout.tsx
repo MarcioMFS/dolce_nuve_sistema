@@ -91,7 +91,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="relative bg-white w-64 h-full overflow-y-auto shadow-xl">
           <div className="p-6 flex items-center justify-between">
             <div className="flex items-center justify-center">
-              <img src="/logo.png" alt="Dolce Nuve" className="h-24 w-24" />
+              <img src="/logodolcenuve.svg" alt="Dolce Nuve" className="h-24 w-24" />
             </div>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
@@ -133,7 +133,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="flex flex-col h-0 flex-1 bg-white shadow-md">
             <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
               <div className="flex items-center justify-center px-4 mb-6">
-                <img src="/logo.png" alt="Dolce Nuve" className="h-16 w-16" />
+                <img src="/logodolcenuve.svg" alt="Dolce Nuve" className="h-16 w-16" />
               </div>
               <nav className="p-3 space-y-1">
                 {navItems.map((item) => (
