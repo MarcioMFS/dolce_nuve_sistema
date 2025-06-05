@@ -83,7 +83,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="relative bg-white w-64 h-full overflow-y-auto shadow-xl">
           <div className="p-6 flex items-center justify-between">
             <div className="flex items-center justify-center">
-              <img src="/logo.png" alt="Dolce Nuve" className="h-16 w-16" />
+              <img src="/logo.png" alt="Dolce Nuve" className="h-24 w-24" />
             </div>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
