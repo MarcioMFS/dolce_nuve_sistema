@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 import { 
   Home, 
@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
+import { useAuthStore } from '../../store/auth';
 
 interface NavItemProps {
   to: string;
@@ -46,7 +47,14 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const navItems = [
     { to: '/', label: 'Dashboard', icon: <Home size={20} /> },
@@ -83,7 +91,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="relative bg-white w-64 h-full overflow-y-auto shadow-xl">
           <div className="p-6 flex items-center justify-between">
             <div className="flex items-center justify-center">
-              <img src="/logo.svg" alt="Dolce Nuve" className="h-24 w-24" />
+              <img src="/logo.png" alt="Dolce Nuve" className="h-24 w-24" />
             </div>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
@@ -105,16 +113,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </nav>
           <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-gray-200">
             <div className="space-y-1">
-              <Link
-                to="/configuracoes"
-                className="flex items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100"
-              >
-                <span className="text-gray-500">
-                  <Settings size={20} />
-                </span>
-                <span className="text-sm font-medium text-gray-700">Configurações</span>
-              </Link>
               <button
+                onClick={handleLogout}
                 className="flex w-full items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100"
               >
                 <span className="text-gray-500">
@@ -149,16 +149,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
             <div className="p-3 border-t border-gray-200">
               <div className="space-y-1">
-                <Link
-                  to="/configuracoes"
-                  className="flex items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100"
-                >
-                  <span className="text-gray-500">
-                    <Settings size={20} />
-                  </span>
-                  <span className="text-sm font-medium text-gray-700">Configurações</span>
-                </Link>
                 <button
+                  onClick={handleLogout}
                   className="flex w-full items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100"
                 >
                   <span className="text-gray-500">
