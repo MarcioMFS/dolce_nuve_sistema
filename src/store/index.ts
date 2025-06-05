@@ -10,7 +10,9 @@ import {
   GeladinhoWithCalculations,
   Ingredient,
   Sale,
-  MonthlySales
+  MonthlySales,
+  ProductStockEntry,
+  GeladinhoStock
 } from '../types';
 import { 
   processProductWithCalculations, 
@@ -27,11 +29,15 @@ interface StoreState {
   monthlySales: MonthlySales[];
 
   // Product actions
-  addProduct: (product: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'total_stock'>) => Promise<void>;
   updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   getProduct: (id: string) => ProductWithCalculations | undefined;
   fetchProducts: () => Promise<void>;
+
+  // Stock entry actions
+  addStockEntry: (entry: Omit<ProductStockEntry, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  fetchStockEntries: (productId: string) => Promise<void>;
 
   // Recipe actions
   addRecipe: (recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
@@ -46,11 +52,15 @@ interface StoreState {
   removeIngredientFromRecipe: (recipe_id: string, ingredientId: string) => Promise<void>;
 
   // Geladinho actions
-  addGeladinho: (geladinho: Omit<Geladinho, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  addGeladinho: (geladinho: Omit<Geladinho, 'id' | 'created_at' | 'updated_at' | 'available_quantity'>) => Promise<void>;
   updateGeladinho: (id: string, geladinho: Partial<Geladinho>) => Promise<void>;
   deleteGeladinho: (id: string) => Promise<void>;
   getGeladinho: (id: string) => GeladinhoWithCalculations | undefined;
   fetchGeladinhos: () => Promise<void>;
+
+  // Geladinho stock actions
+  addGeladinhoStock: (stock: Omit<GeladinhoStock, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  fetchGeladinhoStock: (geladinhoId: string) => Promise<void>;
 
   // Sales actions
   addSale: (sale: Omit<Sale, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
@@ -74,7 +84,10 @@ export const useStore = create<StoreState>()(
       fetchProducts: async () => {
         const { data: products, error } = await supabase
           .from('products')
-          .select('*')
+          .select(`
+            *,
+            stock_entries:product_stock_entries(*)
+          `)
           .order('name');
         
         if (error) {
@@ -82,12 +95,15 @@ export const useStore = create<StoreState>()(
           return;
         }
         
-        const processedProducts = products.map(processProductWithCalculations);
+        const processedProducts = products.map(product => ({
+          ...processProductWithCalculations(product),
+          stock_entries: product.stock_entries,
+        }));
+        
         set({ products: processedProducts });
       },
 
       addProduct: async (product) => {
-        // Remove calculated fields before inserting
         const { data, error } = await supabase
           .from('products')
           .insert([{
@@ -96,7 +112,8 @@ export const useStore = create<StoreState>()(
             total_quantity: product.total_quantity,
             total_value: product.total_value,
             purchase_date: product.purchase_date,
-            supplier: product.supplier
+            supplier: product.supplier,
+            total_stock: 0,
           }])
           .select()
           .single();
@@ -106,21 +123,20 @@ export const useStore = create<StoreState>()(
           return;
         }
         
-        const finalProcessedProduct = processProductWithCalculations(data);
+        const processedProduct = processProductWithCalculations(data);
         set((state) => ({
-          products: [...state.products, finalProcessedProduct],
+          products: [...state.products, processedProduct],
         }));
       },
 
       updateProduct: async (id, updatedFields) => {
-        // Remove calculated fields before updating
         const updateData = {
           ...updatedFields,
         };
         
-        // Ensure calculated fields are not sent to the database
         delete (updateData as any).unit_price;
         delete (updateData as any).standard_price;
+        delete (updateData as any).stock_entries;
 
         const { data, error } = await supabase
           .from('products')
@@ -140,7 +156,6 @@ export const useStore = create<StoreState>()(
           ),
         }));
 
-        // Fetch updated recipes and geladinhos since they might be affected
         await get().fetchRecipes();
         await get().fetchGeladinhos();
       },
@@ -160,13 +175,47 @@ export const useStore = create<StoreState>()(
           products: state.products.filter((product) => product.id !== id),
         }));
 
-        // Fetch updated recipes and geladinhos since they might be affected
         await get().fetchRecipes();
         await get().fetchGeladinhos();
       },
 
       getProduct: (id) => {
         return get().products.find((product) => product.id === id);
+      },
+
+      // Stock entry actions
+      addStockEntry: async (entry) => {
+        const { error } = await supabase
+          .from('product_stock_entries')
+          .insert([entry]);
+        
+        if (error) {
+          console.error('Error adding stock entry:', error);
+          return;
+        }
+        
+        await get().fetchProducts();
+      },
+
+      fetchStockEntries: async (productId) => {
+        const { data, error } = await supabase
+          .from('product_stock_entries')
+          .select('*')
+          .eq('product_id', productId)
+          .order('entry_date', { ascending: false });
+        
+        if (error) {
+          console.error('Error fetching stock entries:', error);
+          return;
+        }
+        
+        set((state) => ({
+          products: state.products.map(product =>
+            product.id === productId
+              ? { ...product, stock_entries: data }
+              : product
+          ),
+        }));
       },
 
       // Recipe actions
@@ -206,7 +255,6 @@ export const useStore = create<StoreState>()(
       },
 
       addRecipe: async (recipe) => {
-        // First create the recipe
         const { data: newRecipe, error: recipeError } = await supabase
           .from('recipes')
           .insert([{
@@ -221,7 +269,6 @@ export const useStore = create<StoreState>()(
           return;
         }
 
-        // Then add ingredients
         const ingredients = recipe.ingredients.map((ingredient) => ({
           recipe_id: newRecipe.id,
           product_id: ingredient.product_id,
@@ -237,7 +284,6 @@ export const useStore = create<StoreState>()(
           return;
         }
 
-        // Fetch all recipes to get the updated data
         await get().fetchRecipes();
       },
 
@@ -257,15 +303,12 @@ export const useStore = create<StoreState>()(
           return;
         }
 
-        // If ingredients were updated, handle that separately
         if (updatedFields.ingredients) {
-          // Delete existing ingredients
           await supabase
             .from('recipe_ingredients')
             .delete()
             .eq('recipe_id', id);
 
-          // Add new ingredients
           const ingredients = updatedFields.ingredients.map((ingredient) => ({
             recipe_id: id,
             product_id: ingredient.product_id,
@@ -277,7 +320,6 @@ export const useStore = create<StoreState>()(
             .insert(ingredients);
         }
 
-        // Fetch all recipes and geladinhos to get the updated data
         await get().fetchRecipes();
         await get().fetchGeladinhos();
       },
@@ -297,7 +339,6 @@ export const useStore = create<StoreState>()(
           recipes: state.recipes.filter((recipe) => recipe.id !== id),
         }));
 
-        // Fetch updated geladinhos since they might be affected
         await get().fetchGeladinhos();
       },
 
@@ -320,7 +361,6 @@ export const useStore = create<StoreState>()(
           return;
         }
 
-        // Fetch all recipes and geladinhos to get the updated data
         await get().fetchRecipes();
         await get().fetchGeladinhos();
       },
@@ -339,7 +379,6 @@ export const useStore = create<StoreState>()(
           return;
         }
 
-        // Fetch all recipes and geladinhos to get the updated data
         await get().fetchRecipes();
         await get().fetchGeladinhos();
       },
@@ -355,7 +394,6 @@ export const useStore = create<StoreState>()(
           return;
         }
 
-        // Fetch all recipes and geladinhos to get the updated data
         await get().fetchRecipes();
         await get().fetchGeladinhos();
       },
@@ -374,7 +412,8 @@ export const useStore = create<StoreState>()(
                 quantity,
                 products (*)
               )
-            )
+            ),
+            stock:geladinho_stock(*)
           `)
           .order('name');
         
@@ -395,6 +434,7 @@ export const useStore = create<StoreState>()(
                 product: ingredient.products ? processProductWithCalculations(ingredient.products) : undefined,
               })),
             } : undefined,
+            stock: geladinho.stock,
           };
           return processGeladinhoWithCalculations(formattedGeladinho);
         });
@@ -405,7 +445,10 @@ export const useStore = create<StoreState>()(
       addGeladinho: async (geladinho) => {
         const { data, error } = await supabase
           .from('geladinhos')
-          .insert([geladinho])
+          .insert([{
+            ...geladinho,
+            available_quantity: 0,
+          }])
           .select()
           .single();
         
@@ -414,7 +457,6 @@ export const useStore = create<StoreState>()(
           return;
         }
         
-        // Fetch all geladinhos to get the updated data with recipes
         await get().fetchGeladinhos();
       },
 
@@ -429,7 +471,6 @@ export const useStore = create<StoreState>()(
           return;
         }
         
-        // Fetch all geladinhos to get the updated data with recipes
         await get().fetchGeladinhos();
       },
 
@@ -451,6 +492,41 @@ export const useStore = create<StoreState>()(
 
       getGeladinho: (id) => {
         return get().geladinhos.find((geladinho) => geladinho.id === id);
+      },
+
+      // Geladinho stock actions
+      addGeladinhoStock: async (stock) => {
+        const { error } = await supabase
+          .from('geladinho_stock')
+          .insert([stock]);
+        
+        if (error) {
+          console.error('Error adding geladinho stock:', error);
+          return;
+        }
+        
+        await get().fetchGeladinhos();
+      },
+
+      fetchGeladinhoStock: async (geladinhoId) => {
+        const { data, error } = await supabase
+          .from('geladinho_stock')
+          .select('*')
+          .eq('geladinho_id', geladinhoId)
+          .order('entry_date', { ascending: false });
+        
+        if (error) {
+          console.error('Error fetching geladinho stock:', error);
+          return;
+        }
+        
+        set((state) => ({
+          geladinhos: state.geladinhos.map(geladinho =>
+            geladinho.id === geladinhoId
+              ? { ...geladinho, stock: data }
+              : geladinho
+          ),
+        }));
       },
 
       // Sales actions
