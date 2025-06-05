@@ -10,7 +10,6 @@ import {
   BarChart3,
   Menu, 
   X,
-  Settings,
   LogOut
 } from 'lucide-react';
 import { useAuthStore } from '../../store/auth';
@@ -20,9 +19,10 @@ interface NavItemProps {
   label: string;
   icon: React.ReactNode;
   isActive: boolean;
+  onClick?: () => void;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ to, label, icon, isActive }) => {
+const NavItem: React.FC<NavItemProps> = ({ to, label, icon, isActive, onClick }) => {
   return (
     <Link
       to={to}
@@ -30,6 +30,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, label, icon, isActive }) => {
         'flex items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100',
         isActive && 'bg-primary-100 text-primary-600'
       )}
+      onClick={onClick}
     >
       <span className={twMerge(isActive ? 'text-primary-600' : 'text-gray-500')}>
         {icon}
@@ -65,64 +66,78 @@ export const Layout: React.FC<LayoutProps> = () => {
     { to: '/relatorios', label: 'Relatórios', icon: <BarChart3 size={20} /> },
   ];
 
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  // Get current page title
+  const currentPage = navItems.find(item => item.to === location.pathname)?.label || 'Dashboard';
+
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Mobile Menu Button */}
-      <div className="md:hidden fixed top-4 left-4 z-30">
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 rounded-full bg-white shadow-md text-gray-700 hover:bg-gray-50"
-        >
-          {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+      {/* Mobile Header */}
+      <div className="fixed top-0 left-0 right-0 z-20 md:hidden">
+        <div className="bg-white shadow-sm px-4 py-2 flex items-center justify-between">
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+          >
+            <Menu size={24} />
+          </button>
+          <h1 className="text-lg font-semibold text-gray-900">{currentPage}</h1>
+          <img src="/logodolcenuve.svg" alt="Dolce Nuve" className="h-10 w-10" />
+        </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      <div
+        className={twMerge(
+          'fixed inset-0 bg-black/50 z-30 transition-opacity md:hidden',
+          isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        )}
+        onClick={closeMobileMenu}
+      />
 
       {/* Mobile Sidebar */}
       <div
         className={twMerge(
-          'fixed inset-0 z-20 transform transition-transform duration-300 ease-in-out md:hidden',
+          'fixed inset-y-0 left-0 z-40 w-3/4 max-w-sm bg-white transform transition-transform duration-300 ease-in-out md:hidden',
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div
-          className="absolute inset-0 bg-gray-500 bg-opacity-75"
-          onClick={() => setIsMobileMenuOpen(false)}
-        ></div>
-        <div className="relative bg-white w-64 h-full overflow-y-auto shadow-xl">
-          <div className="p-6 flex items-center justify-between">
-            <div className="flex items-center justify-center">
-              <img src="/logodolcenuve.svg" alt="Dolce Nuve" className="h-24 w-24" />
-            </div>
+        <div className="h-full flex flex-col">
+          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+            <img src="/logodolcenuve.svg" alt="Dolce Nuve" className="h-12 w-12" />
             <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-gray-500 hover:text-gray-700"
+              onClick={closeMobileMenu}
+              className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"
             >
               <X size={20} />
             </button>
           </div>
-          <nav className="p-3 space-y-1">
-            {navItems.map((item) => (
-              <NavItem
-                key={item.to}
-                to={item.to}
-                label={item.label}
-                icon={item.icon}
-                isActive={location.pathname === item.to}
-              />
-            ))}
-          </nav>
-          <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-gray-200">
-            <div className="space-y-1">
-              <button
-                onClick={handleLogout}
-                className="flex w-full items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100"
-              >
-                <span className="text-gray-500">
-                  <LogOut size={20} />
-                </span>
-                <span className="text-sm font-medium text-gray-700">Sair</span>
-              </button>
-            </div>
+          
+          <div className="flex-1 overflow-y-auto">
+            <nav className="p-4 space-y-1">
+              {navItems.map((item) => (
+                <NavItem
+                  key={item.to}
+                  {...item}
+                  isActive={location.pathname === item.to}
+                  onClick={closeMobileMenu}
+                />
+              ))}
+            </nav>
+          </div>
+
+          <div className="p-4 border-t border-gray-200">
+            <button
+              onClick={() => {
+                closeMobileMenu();
+                handleLogout();
+              }}
+              className="flex w-full items-center space-x-3 p-3 rounded-lg text-error-600 hover:bg-error-50 transition-colors"
+            >
+              <LogOut size={20} />
+              <span className="text-sm font-medium">Sair</span>
+            </button>
           </div>
         </div>
       </div>
@@ -139,26 +154,20 @@ export const Layout: React.FC<LayoutProps> = () => {
                 {navItems.map((item) => (
                   <NavItem
                     key={item.to}
-                    to={item.to}
-                    label={item.label}
-                    icon={item.icon}
+                    {...item}
                     isActive={location.pathname === item.to}
                   />
                 ))}
               </nav>
             </div>
             <div className="p-3 border-t border-gray-200">
-              <div className="space-y-1">
-                <button
-                  onClick={handleLogout}
-                  className="flex w-full items-center space-x-3 p-3 rounded-lg transition-colors hover:bg-primary-100"
-                >
-                  <span className="text-gray-500">
-                    <LogOut size={20} />
-                  </span>
-                  <span className="text-sm font-medium text-gray-700">Sair</span>
-                </button>
-              </div>
+              <button
+                onClick={handleLogout}
+                className="flex w-full items-center space-x-3 p-3 rounded-lg text-error-600 hover:bg-error-50 transition-colors"
+              >
+                <LogOut size={20} />
+                <span className="text-sm font-medium">Sair</span>
+              </button>
             </div>
           </div>
         </div>
@@ -166,8 +175,8 @@ export const Layout: React.FC<LayoutProps> = () => {
 
       {/* Main Content */}
       <div className="flex flex-col flex-1 overflow-hidden">
-        <main className="flex-1 relative overflow-y-auto focus:outline-none">
-          <div className="py-6 sm:px-6 lg:px-8">
+        <main className="flex-1 relative overflow-y-auto focus:outline-none md:pt-0 pt-16">
+          <div className="py-6 px-4 sm:px-6 lg:px-8">
             <Outlet />
           </div>
         </main>
