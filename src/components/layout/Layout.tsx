@@ -84,7 +84,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="p-6 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <img src="/logo.png" alt="Dolce Nuve" className="h-12 w-12" />
-              <span className="text-xl font-bold text-primary-400">Dolce Nuve</span>
             </div>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
