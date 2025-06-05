@@ -12,8 +12,19 @@ export interface Product {
   supplier?: string;
   created_at: string;
   updated_at: string;
-  unit_price?: number;
-  standard_price?: number;
+  total_stock: number;
+}
+
+export interface ProductStockEntry {
+  id: string;
+  product_id: string;
+  quantity: number;
+  total_cost: number;
+  entry_date: string;
+  supplier?: string;
+  note_photo_url?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ProductWithCalculations extends Product {
@@ -21,6 +32,7 @@ export interface ProductWithCalculations extends Product {
   standard_price: number;
   formatted_unit_price: string;
   formatted_standard_price: string;
+  stock_entries?: ProductStockEntry[];
 }
 
 export interface Ingredient {
@@ -59,6 +71,16 @@ export interface Geladinho {
   created_at: string;
   updated_at: string;
   recipe?: RecipeWithCalculations;
+  available_quantity: number;
+}
+
+export interface GeladinhoStock {
+  id: string;
+  geladinho_id: string;
+  quantity: number;
+  batch_date: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface GeladinhoWithCalculations extends Geladinho {
@@ -67,6 +89,7 @@ export interface GeladinhoWithCalculations extends Geladinho {
   suggested_price: number;
   unit_profit: number;
   real_margin: number;
+  stock_entries?: GeladinhoStock[];
 }
 
 export interface Sale {
