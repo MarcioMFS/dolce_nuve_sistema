@@ -24,9 +24,16 @@
     - `movement_type`: Types of inventory movements
 */
 
--- Use IF NOT EXISTS to make the migration idempotent
-CREATE TYPE IF NOT EXISTS unit_measure AS ENUM ('gramas', 'litros', 'unidades');
-CREATE TYPE IF NOT EXISTS movement_type AS ENUM ('entrada', 'saida', 'ajuste');
+-- Create enum types only if they do not already exist
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'unit_measure') THEN
+    CREATE TYPE unit_measure AS ENUM ('gramas', 'litros', 'unidades');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'movement_type') THEN
+    CREATE TYPE movement_type AS ENUM ('entrada', 'saida', 'ajuste');
+  END IF;
+END $$;
 
 -- Create products table
 CREATE TABLE IF NOT EXISTS products (
