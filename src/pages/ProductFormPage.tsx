@@ -1,14 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useStore } from '../store';
 import { ProductForm, ProductFormData } from '../components/products/ProductForm';
+import { StockEntryForm, StockEntryFormData } from '../components/products/StockEntryForm';
+import { StockEntryHistory } from '../components/products/StockEntryHistory';
 import { Button } from '../components/ui/Button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 
 export const ProductFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { products, addProduct, updateProduct, deleteProduct, getProduct } = useStore();
+  const { 
+    products, 
+    addProduct, 
+    updateProduct, 
+    deleteProduct, 
+    getProduct,
+    addStockEntry,
+    fetchStockEntries 
+  } = useStore();
+  
+  const [showStockEntryForm, setShowStockEntryForm] = useState(false);
   
   const isEditing = Boolean(id);
   const product = id ? getProduct(id) : undefined;
@@ -27,6 +39,18 @@ export const ProductFormPage: React.FC = () => {
       deleteProduct(id);
       navigate('/produtos');
     }
+  };
+
+  const handleStockEntrySubmit = async (data: StockEntryFormData) => {
+    if (!id) return;
+
+    await addStockEntry({
+      product_id: id,
+      ...data,
+    });
+
+    setShowStockEntryForm(false);
+    fetchStockEntries(id);
   };
   
   if (isEditing && !product) {
@@ -57,12 +81,42 @@ export const ProductFormPage: React.FC = () => {
         </h1>
       </div>
       
-      <ProductForm
-        onSubmit={handleSubmit}
-        defaultValues={product}
-        onDelete={isEditing ? handleDelete : undefined}
-        isEditing={isEditing}
-      />
+      {isEditing ? (
+        <div className="space-y-6">
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setShowStockEntryForm(true)}
+              leftIcon={<Plus size={18} />}
+              disabled={showStockEntryForm}
+            >
+              Nova Entrada de Estoque
+            </Button>
+          </div>
+
+          {showStockEntryForm && (
+            <StockEntryForm
+              productId={id}
+              productName={product.name}
+              onSubmit={handleStockEntrySubmit}
+              onCancel={() => setShowStockEntryForm(false)}
+            />
+          )}
+
+          <StockEntryHistory entries={product.stock_entries || []} />
+
+          <ProductForm
+            onSubmit={handleSubmit}
+            defaultValues={product}
+            onDelete={handleDelete}
+            isEditing={true}
+          />
+        </div>
+      ) : (
+        <ProductForm
+          onSubmit={handleSubmit}
+          isEditing={false}
+        />
+      )}
     </div>
   );
 };
