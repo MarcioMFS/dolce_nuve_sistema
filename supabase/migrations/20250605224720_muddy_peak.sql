@@ -139,6 +139,7 @@ CREATE TRIGGER update_geladinho_stock_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 
 DROP TRIGGER IF EXISTS update_sales_updated_at ON sales;
+
 CREATE TRIGGER update_sales_updated_at
   BEFORE UPDATE ON sales
   FOR EACH ROW
