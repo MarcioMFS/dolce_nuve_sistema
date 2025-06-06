@@ -17,6 +17,7 @@ export interface ProductionFormData {
   geladinho_id: string;
   quantity: number;
   batch_date: string;
+  movement_type: 'entrada';
 }
 
 export const GeladinhoProductionForm: React.FC<GeladinhoProductionFormProps> = ({
@@ -35,6 +36,7 @@ export const GeladinhoProductionForm: React.FC<GeladinhoProductionFormProps> = (
   } = useForm<ProductionFormData>({
     defaultValues: {
       batch_date: new Date().toISOString().slice(0, 10),
+      movement_type: 'entrada',
     },
   });
 
@@ -50,6 +52,7 @@ export const GeladinhoProductionForm: React.FC<GeladinhoProductionFormProps> = (
     onSubmit({
       ...data,
       quantity: Number(data.quantity),
+      movement_type: 'entrada',
     });
   };
 
@@ -113,6 +116,8 @@ export const GeladinhoProductionForm: React.FC<GeladinhoProductionFormProps> = (
               error={errors.batch_date?.message}
             />
           </div>
+
+          <input type="hidden" {...register('movement_type')} value="entrada" />
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button
