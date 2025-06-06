@@ -52,7 +52,7 @@ interface StoreState {
   removeIngredientFromRecipe: (recipe_id: string, ingredientId: string) => Promise<void>;
 
   // Geladinho actions
-  addGeladinho: (geladinho: Omit<Geladinho, 'id' | 'created_at' | 'updated_at' | 'available_quantity'>) => Promise<void>;
+  addGeladinho: (geladinho: Omit<Geladinho, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   updateGeladinho: (id: string, geladinho: Partial<Geladinho>) => Promise<void>;
   deleteGeladinho: (id: string) => Promise<void>;
   getGeladinho: (id: string) => GeladinhoWithCalculations | undefined;
@@ -443,8 +443,16 @@ export const useStore = create<StoreState>()(
         const { data, error } = await supabase
           .from('geladinhos')
           .insert([{
-            ...geladinho,
-            available_quantity: 0,
+            name: geladinho.name,
+            recipe_id: geladinho.recipe_id,
+            category: geladinho.category,
+            profit_margin: geladinho.profit_margin,
+            status: geladinho.status,
+            description: geladinho.description,
+            prep_time: geladinho.prep_time,
+            freezing_temp: geladinho.freezing_temp,
+            notes: geladinho.notes,
+            image_url: geladinho.image_url,
           }])
           .select()
           .single();

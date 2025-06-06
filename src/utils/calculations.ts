@@ -1,4 +1,4 @@
-import { UnitOfMeasure, Product, Ingredient, Recipe, Geladinho } from '../types';
+import { UnitOfMeasure, Product, Ingredient, Recipe, Geladinho, GeladinhoStock } from '../types';
 
 // 🧮 Calcula o preço por unidade base (g, ml ou un)
 export const calculateUnitPrice = (
@@ -139,7 +139,7 @@ export const processRecipeWithCalculations = (recipe: Recipe) => {
 };
 
 // ❄️ Processa um geladinho completo (produto final)
-export const processGeladinhoWithCalculations = (geladinho: Geladinho) => {
+export const processGeladinhoWithCalculations = (geladinho: Geladinho & { stock?: GeladinhoStock[] }) => {
   if (!geladinho) return null;
 
   // Process the recipe first if it exists
@@ -151,6 +151,9 @@ export const processGeladinhoWithCalculations = (geladinho: Geladinho) => {
   const unit_profit = calculateUnitProfit(suggested_price, unit_cost);
   const real_margin = calculateRealMargin(unit_profit, suggested_price);
 
+  // Calculate available quantity from stock entries
+  const available_quantity = geladinho.stock?.reduce((total, entry) => total + entry.quantity, 0) || 0;
+
   return {
     ...geladinho,
     recipe: processedRecipe,
@@ -159,5 +162,6 @@ export const processGeladinhoWithCalculations = (geladinho: Geladinho) => {
     suggested_price,
     unit_profit,
     real_margin,
+    available_quantity,
   };
 };
