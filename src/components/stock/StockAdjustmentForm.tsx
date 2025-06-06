@@ -100,7 +100,7 @@ export const StockAdjustmentForm: React.FC<StockAdjustmentFormProps> = ({
   };
 
   return (
-    <Card className="max-w-2xl mx-auto">
+    <Card className="max-w-3xl mx-auto">
       <form onSubmit={handleSubmit(onFormSubmit)}>
         <CardHeader>
           <CardTitle>Ajuste de Estoque</CardTitle>
