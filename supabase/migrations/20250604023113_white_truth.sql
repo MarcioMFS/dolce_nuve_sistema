@@ -24,9 +24,9 @@
     - `movement_type`: Types of inventory movements
 */
 
--- Create enum types
-CREATE TYPE unit_measure AS ENUM ('gramas', 'litros', 'unidades');
-CREATE TYPE movement_type AS ENUM ('entrada', 'saida', 'ajuste');
+-- Use IF NOT EXISTS to make the migration idempotent
+CREATE TYPE IF NOT EXISTS unit_measure AS ENUM ('gramas', 'litros', 'unidades');
+CREATE TYPE IF NOT EXISTS movement_type AS ENUM ('entrada', 'saida', 'ajuste');
 
 -- Create products table
 CREATE TABLE IF NOT EXISTS products (
