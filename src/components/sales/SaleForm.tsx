@@ -55,7 +55,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, defaultValues, isE
   };
 
   return (
-    <Card className="max-w-xl mx-auto animate-fade-in">
+    <Card className="max-w-3xl mx-auto animate-fade-in">
       <form onSubmit={handleSubmit(onFormSubmit)}>
         <CardHeader>
           <CardTitle>{isEditing ? 'Editar Venda' : 'Nova Venda'}</CardTitle>

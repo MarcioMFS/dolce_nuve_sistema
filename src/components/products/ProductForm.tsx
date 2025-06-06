@@ -45,7 +45,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   return (
-    <Card className="max-w-2xl mx-auto animate-fade-in">
+    <Card className="max-w-3xl mx-auto animate-fade-in">
       <form onSubmit={handleSubmit(onFormSubmit)}>
         <CardHeader>
           <CardTitle>{isEditing ? 'Editar Produto' : 'Novo Produto'}</CardTitle>
