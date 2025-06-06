@@ -121,9 +121,22 @@ export const processProductWithCalculations = (product: Product & { stock_entrie
   if (!product) return null;
 
   // Calcula preço médio ponderado baseado nas entradas de estoque
-  const unitPrice = product.stock_entries && product.stock_entries.length > 0
-    ? calculateWeightedAveragePrice(product.stock_entries)
-    : calculateUnitPrice(product.total_value, product.total_quantity, product.unit_of_measure);
+  // Se não houver entradas de estoque, usa os dados originais do produto
+  let unitPrice = 0;
+  
+  if (product.stock_entries && product.stock_entries.length > 0) {
+    unitPrice = calculateWeightedAveragePrice(product.stock_entries);
+  }
+  
+  // Se não conseguiu calcular o preço médio ponderado (sem entradas de estoque ou todas negativas),
+  // usa o preço original do produto
+  if (unitPrice === 0) {
+    unitPrice = calculateUnitPrice(
+      product.total_value,
+      product.total_quantity,
+      product.unit_of_measure
+    );
+  }
 
   const standardPrice = calculateStandardPrice(unitPrice, product.unit_of_measure);
 
