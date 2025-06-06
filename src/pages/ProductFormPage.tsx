@@ -66,7 +66,7 @@ export const ProductFormPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center mb-6">
         <Button
           variant="ghost"
