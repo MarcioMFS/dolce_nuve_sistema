@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useStore } from '../store';
+import { useStockAlerts } from '../hooks/useStockAlerts';
 import { GeladinhoForm, GeladinhoFormData } from '../components/geladinhos/GeladinhoForm';
 import { GeladinhoProductionForm, ProductionFormData } from '../components/geladinhos/GeladinhoProductionForm';
 import { GeladinhoProductionHistory } from '../components/geladinhos/GeladinhoProductionHistory';
+import { StockAlertModal } from '../components/alerts/StockAlertModal';
 import { Button } from '../components/ui/Button';
 import { ArrowLeft, Plus } from 'lucide-react';
 
@@ -12,13 +14,17 @@ export const GeladinhoFormPage: React.FC = () => {
   const navigate = useNavigate();
   const { 
     geladinhos, 
+    products,
     addGeladinho, 
     updateGeladinho, 
     deleteGeladinho, 
     getGeladinho,
     addGeladinhoStock,
-    fetchGeladinhoStock 
+    fetchGeladinhoStock,
+    fetchProducts
   } = useStore();
+  
+  const { alerts, isModalOpen, checkStockLevels, closeModal } = useStockAlerts();
   
   const [showProductionForm, setShowProductionForm] = useState(false);
   
@@ -44,13 +50,24 @@ export const GeladinhoFormPage: React.FC = () => {
   const handleProductionSubmit = async (data: ProductionFormData) => {
     if (!id) return;
 
-    await addGeladinhoStock({
-      geladinho_id: id,
-      ...data,
-    });
+    try {
+      // Registra a produção
+      await addGeladinhoStock({
+        geladinho_id: id,
+        ...data,
+      });
 
-    setShowProductionForm(false);
-    await fetchGeladinhoStock(id);
+      // Atualiza os dados dos produtos para ter os estoques mais recentes
+      await fetchProducts();
+      
+      // Verifica os níveis de estoque e mostra alertas se necessário
+      checkStockLevels(products);
+
+      setShowProductionForm(false);
+      await fetchGeladinhoStock(id);
+    } catch (error) {
+      console.error('Erro ao registrar produção:', error);
+    }
   };
   
   if (isEditing && !geladinho) {
@@ -115,6 +132,13 @@ export const GeladinhoFormPage: React.FC = () => {
           isEditing={false}
         />
       )}
+
+      {/* Modal de Alertas de Estoque */}
+      <StockAlertModal
+        alerts={alerts}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      />
     </div>
   );
 };
