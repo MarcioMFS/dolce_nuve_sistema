@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS public.sales (
 );
 
 -- Create trigger for updated_at
+DROP TRIGGER IF EXISTS update_sales_updated_at ON public.sales;
 CREATE TRIGGER update_sales_updated_at
     BEFORE UPDATE ON public.sales
     FOR EACH ROW

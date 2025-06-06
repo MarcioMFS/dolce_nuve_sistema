@@ -64,6 +64,7 @@ CREATE POLICY "Users can delete their own sales"
   USING (true);
 
 -- Create updated_at trigger
+DROP TRIGGER IF EXISTS update_sales_updated_at ON sales;
 CREATE TRIGGER update_sales_updated_at
   BEFORE UPDATE ON sales
   FOR EACH ROW
