@@ -655,10 +655,11 @@ export const useStore = create<StoreState>()(
 
         if (error) {
           console.error('Error adding sale:', error);
-          return;
+          throw error;
         }
 
         await get().fetchSales();
+        await get().fetchGeladinhos();
         await get().fetchMonthlySales();
       },
 
@@ -674,6 +675,7 @@ export const useStore = create<StoreState>()(
         }
 
         await get().fetchSales();
+        await get().fetchGeladinhos();
         await get().fetchMonthlySales();
       },
 
@@ -688,6 +690,7 @@ export const useStore = create<StoreState>()(
         set((state) => ({
           sales: state.sales.filter((sale) => sale.id !== id),
         }));
+        await get().fetchGeladinhos();
         await get().fetchMonthlySales();
       },
 
