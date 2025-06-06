@@ -4,17 +4,34 @@ import { Sale } from '../../types';
 import { formatCurrency } from '../../utils/calculations';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { Plus, Search, ShoppingCart } from 'lucide-react';
+import { Plus, Search, ShoppingCart, Trash2 } from 'lucide-react';
 
 interface SaleListProps {
   sales: Sale[];
+  onDelete?: (id: string) => void;
 }
 
-export const SaleList: React.FC<SaleListProps> = ({ sales }) => {
+export const SaleList: React.FC<SaleListProps> = ({ sales, onDelete }) => {
   const [search, setSearch] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const filtered = sales.filter((s) =>
     s.geladinho?.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleDelete = async (id: string) => {
+    if (!onDelete) return;
+    
+    const confirmed = window.confirm('Tem certeza que deseja excluir esta venda? Esta ação não pode ser desfeita.');
+    if (!confirmed) return;
+
+    setDeletingId(id);
+    try {
+      await onDelete(id);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -49,6 +66,7 @@ export const SaleList: React.FC<SaleListProps> = ({ sales }) => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd.</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço Unit.</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -63,6 +81,21 @@ export const SaleList: React.FC<SaleListProps> = ({ sales }) => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sale.quantity}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatCurrency(sale.unit_price)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{formatCurrency(sale.total_price)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      {onDelete && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(sale.id)}
+                          leftIcon={<Trash2 size={16} />}
+                          className="text-error-600 hover:text-error-800 hover:bg-error-50"
+                          isLoading={deletingId === sale.id}
+                          disabled={deletingId === sale.id}
+                        >
+                          Excluir
+                        </Button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

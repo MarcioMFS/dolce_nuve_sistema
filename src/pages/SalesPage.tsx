@@ -3,7 +3,11 @@ import { useStore } from '../store';
 import { SaleList } from '../components/sales/SaleList';
 
 export const SalesPage: React.FC = () => {
-  const { sales } = useStore();
+  const { sales, deleteSale } = useStore();
+
+  const handleDelete = async (id: string) => {
+    await deleteSale(id);
+  };
 
   return (
     <div className="space-y-6">
@@ -11,7 +15,7 @@ export const SalesPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900">Vendas</h1>
       </div>
 
-      <SaleList sales={sales} />
+      <SaleList sales={sales} onDelete={handleDelete} />
     </div>
   );
 };
