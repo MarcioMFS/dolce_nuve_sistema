@@ -45,7 +45,7 @@ function App() {
           <Route path="relatorios" element={<ReportsPage />} />
         </Route>
         
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/\" replace />} />
       </Routes>
     </Router>
   );
