@@ -500,13 +500,108 @@ export const useStore = create<StoreState>()(
 
       // Geladinho stock actions
       addGeladinhoStock: async (stock) => {
-        const { error } = await supabase
+        // First, insert the geladinho stock entry
+        const { error: stockError } = await supabase
           .from('geladinho_stock')
           .insert([stock]);
         
-        if (error) {
-          console.error('Error adding geladinho stock:', error);
+        if (stockError) {
+          console.error('Error adding geladinho stock:', stockError);
           return;
+        }
+
+        // If this is a production entry (entrada), we need to deduct ingredients from product stock
+        if (stock.movement_type === 'entrada') {
+          try {
+            // Get the geladinho details with its recipe
+            const geladinho = get().geladinhos.find(g => g.id === stock.geladinho_id);
+            
+            if (!geladinho || !geladinho.recipe) {
+              console.error('Geladinho or recipe not found for stock deduction');
+              await get().fetchGeladinhos();
+              return;
+            }
+
+            const recipe = geladinho.recipe;
+            const quantityProduced = stock.quantity;
+            const recipeYield = recipe.yield;
+
+            // Calculate how many recipe batches were made
+            const batchesProduced = quantityProduced / recipeYield;
+
+            console.log(`Produzindo ${quantityProduced} unidades de ${geladinho.name}`);
+            console.log(`Receita rende ${recipeYield} unidades, então foram feitos ${batchesProduced} lotes`);
+
+            // For each ingredient in the recipe, calculate consumption and update product stock
+            for (const ingredient of recipe.ingredients) {
+              if (!ingredient.product) {
+                console.warn(`Product not found for ingredient ${ingredient.product_id}`);
+                continue;
+              }
+
+              // Calculate total quantity consumed of this ingredient
+              const quantityConsumed = ingredient.quantity * batchesProduced;
+              
+              console.log(`Consumindo ${quantityConsumed}g de ${ingredient.product.name}`);
+
+              // Get current product stock from database to ensure we have the latest value
+              const { data: currentProduct, error: fetchError } = await supabase
+                .from('products')
+                .select('total_stock')
+                .eq('id', ingredient.product_id)
+                .single();
+
+              if (fetchError) {
+                console.error(`Error fetching current stock for product ${ingredient.product_id}:`, fetchError);
+                continue;
+              }
+
+              const currentStock = currentProduct.total_stock || 0;
+              const newStock = currentStock - quantityConsumed;
+
+              console.log(`Estoque atual de ${ingredient.product.name}: ${currentStock}g`);
+              console.log(`Novo estoque: ${newStock}g`);
+
+              // Check if there's enough stock
+              if (newStock < 0) {
+                console.warn(`Insufficient stock for ${ingredient.product.name}. Current: ${currentStock}g, Required: ${quantityConsumed}g`);
+                // You might want to throw an error here or handle this case differently
+                // For now, we'll continue but log the warning
+              }
+
+              // Update the product's total_stock
+              const { error: updateError } = await supabase
+                .from('products')
+                .update({ total_stock: Math.max(0, newStock) }) // Ensure stock doesn't go negative
+                .eq('id', ingredient.product_id);
+
+              if (updateError) {
+                console.error(`Error updating stock for product ${ingredient.product_id}:`, updateError);
+                continue;
+              }
+
+              // Also create a stock entry record for tracking
+              const { error: entryError } = await supabase
+                .from('product_stock_entries')
+                .insert([{
+                  product_id: ingredient.product_id,
+                  quantity: -quantityConsumed, // Negative quantity for consumption
+                  total_cost: 0, // No cost for consumption entries
+                  entry_date: stock.batch_date,
+                  supplier: `Produção: ${geladinho.name} (${quantityProduced} unidades)`,
+                }]);
+
+              if (entryError) {
+                console.error(`Error creating stock entry for product ${ingredient.product_id}:`, entryError);
+              }
+            }
+
+            // Refresh products data to reflect the updated stock levels
+            await get().fetchProducts();
+            
+          } catch (error) {
+            console.error('Error processing ingredient stock deduction:', error);
+          }
         }
         
         await get().fetchGeladinhos();
