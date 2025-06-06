@@ -24,6 +24,17 @@ CREATE TABLE IF NOT EXISTS geladinho_stock (
   updated_at timestamp with time zone DEFAULT now()
 );
 
+-- Ensure products table has user_id column for RLS policies
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'products' AND column_name = 'user_id'
+  ) THEN
+    ALTER TABLE products ADD COLUMN user_id UUID DEFAULT auth.uid();
+  END IF;
+END $$;
+
 -- Create product_stock_entries table if it doesn't exist
 CREATE TABLE IF NOT EXISTS product_stock_entries (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
