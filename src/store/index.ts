@@ -29,7 +29,7 @@ interface StoreState {
   monthlySales: MonthlySales[];
 
   // Product actions
-  addProduct: (product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'total_stock'>) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'total_stock' | 'total_quantity' | 'total_value' | 'purchase_date' | 'supplier'>) => Promise<string | null>;
   updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   getProduct: (id: string) => ProductWithCalculations | undefined;
@@ -106,34 +106,33 @@ export const useStore = create<StoreState>()(
           .insert([{
             name: product.name,
             unit_of_measure: product.unit_of_measure,
-            total_quantity: product.total_quantity,
-            total_value: product.total_value,
-            purchase_date: product.purchase_date,
-            supplier: product.supplier,
-            total_stock: 0,
+            total_quantity: 0, // Initialize with 0
+            total_value: 0, // Initialize with 0
+            purchase_date: new Date().toISOString(), // Set current date as placeholder
+            total_stock: 0, // Initialize with 0
           }])
           .select()
           .single();
         
         if (error) {
           console.error('Error adding product:', error);
-          return;
+          return null;
         }
         
         const processedProduct = processProductWithCalculations(data);
         set((state) => ({
           products: [...state.products, processedProduct],
         }));
+        
+        return data.id;
       },
 
       updateProduct: async (id, updatedFields) => {
+        // Only allow updating name and unit_of_measure
         const updateData = {
-          ...updatedFields,
+          name: updatedFields.name,
+          unit_of_measure: updatedFields.unit_of_measure,
         };
-        
-        delete (updateData as any).unit_price;
-        delete (updateData as any).standard_price;
-        delete (updateData as any).stock_entries;
 
         const { data, error } = await supabase
           .from('products')

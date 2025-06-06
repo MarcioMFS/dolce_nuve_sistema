@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useStore } from '../store';
 import { ProductForm, ProductFormData } from '../components/products/ProductForm';
@@ -21,17 +21,31 @@ export const ProductFormPage: React.FC = () => {
   } = useStore();
   
   const [showStockEntryForm, setShowStockEntryForm] = useState(false);
+  const [isNewProduct, setIsNewProduct] = useState(false);
   
   const isEditing = Boolean(id);
   const product = id ? getProduct(id) : undefined;
   
-  const handleSubmit = (data: ProductFormData) => {
-    if (isEditing && id) {
-      updateProduct(id, data);
-    } else {
-      addProduct(data);
+  // For new products, automatically show stock entry form after creation
+  useEffect(() => {
+    if (isNewProduct && id) {
+      setShowStockEntryForm(true);
+      setIsNewProduct(false);
     }
-    navigate('/produtos');
+  }, [isNewProduct, id]);
+  
+  const handleSubmit = async (data: ProductFormData) => {
+    if (isEditing && id) {
+      await updateProduct(id, data);
+      navigate('/produtos');
+    } else {
+      // Create new product and redirect to edit page with stock entry form
+      const newProductId = await addProduct(data);
+      if (newProductId) {
+        setIsNewProduct(true);
+        navigate(`/produtos/editar/${newProductId}`);
+      }
+    }
   };
   
   const handleDelete = () => {
@@ -50,9 +64,6 @@ export const ProductFormPage: React.FC = () => {
     });
 
     setShowStockEntryForm(false);
-    // Aguarda a atualização do histórico de entradas para
-    // garantir que o registro recém-criado seja exibido ao
-    // retornar para a página de edição
     await fetchStockEntries(id);
   };
   
@@ -98,14 +109,14 @@ export const ProductFormPage: React.FC = () => {
 
           {showStockEntryForm && (
             <StockEntryForm
-              productId={id}
-              productName={product.name}
+              productId={id!}
+              productName={product!.name}
               onSubmit={handleStockEntrySubmit}
               onCancel={() => setShowStockEntryForm(false)}
             />
           )}
 
-          <StockEntryHistory entries={product.stock_entries || []} />
+          <StockEntryHistory entries={product!.stock_entries || []} />
 
           <ProductForm
             onSubmit={handleSubmit}

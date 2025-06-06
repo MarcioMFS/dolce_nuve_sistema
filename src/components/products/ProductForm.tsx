@@ -1,11 +1,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { format } from 'date-fns';
 import { 
   Package, 
-  DollarSign, 
-  Calendar, 
-  Store, 
   Save,
   Trash
 } from 'lucide-react';
@@ -25,10 +21,6 @@ interface ProductFormProps {
 export interface ProductFormData {
   name: string;
   unit_of_measure: 'gramas';
-  total_quantity: number;
-  total_value: number;
-  purchase_date: string;
-  supplier?: string;
 }
 
 export const ProductForm: React.FC<ProductFormProps> = ({
@@ -45,111 +37,49 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     defaultValues: {
       name: defaultValues?.name || '',
       unit_of_measure: 'gramas',
-      total_quantity: defaultValues?.total_quantity || 0,
-      total_value: defaultValues?.total_value || 0,
-      purchase_date: defaultValues?.purchase_date 
-        ? format(new Date(defaultValues.purchase_date), 'yyyy-MM-dd') 
-        : format(new Date(), 'yyyy-MM-dd'),
-      supplier: defaultValues?.supplier || '',
     },
   });
 
   const onFormSubmit = (data: ProductFormData) => {
-    // Convert numeric strings to numbers
-    const formattedData = {
-      ...data,
-      total_quantity: Number(data.total_quantity),
-      total_value: Number(data.total_value),
-    };
-    
-    onSubmit(formattedData);
+    onSubmit(data);
   };
 
   return (
-    <Card className="max-w-3xl mx-auto animate-fade-in">
+    <Card className="max-w-2xl mx-auto animate-fade-in">
       <form onSubmit={handleSubmit(onFormSubmit)}>
         <CardHeader>
           <CardTitle>{isEditing ? 'Editar Produto' : 'Novo Produto'}</CardTitle>
           <CardDescription>
             {isEditing
-              ? 'Edite as informações do produto cadastrado'
-              : 'Preencha os dados do produto que você está comprando'}
+              ? 'Edite as informações básicas do produto'
+              : 'Defina um novo produto (ingrediente) no sistema. Após criar o produto, você poderá registrar a primeira compra.'}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Nome do Produto"
-              placeholder="Ex: Leite Condensado"
-              leftIcon={<Package size={18} />}
-              {...register('name', {
-                required: 'Nome do produto é obrigatório',
-                maxLength: {
-                  value: 100,
-                  message: 'O nome não pode ter mais de 100 caracteres',
-                },
-              })}
-              error={errors.name?.message}
-            />
-            
-            <input type="hidden" {...register('unit_of_measure')} value="gramas" />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Quantidade (gramas)"
-              type="number"
-              step="0.01"
-              min="0.01"
-              placeholder="Ex: 1000"
-              {...register('total_quantity', {
-                required: 'Quantidade é obrigatória',
-                min: {
-                  value: 0.01,
-                  message: 'A quantidade deve ser maior que zero',
-                },
-                valueAsNumber: true,
-              })}
-              error={errors.total_quantity?.message}
-            />
-            
-            <Input
-              label="Valor Total Pago (R$)"
-              type="number"
-              step="0.01"
-              min="0.01"
-              placeholder="Ex: 7.50"
-              leftIcon={<DollarSign size={18} />}
-              {...register('total_value', {
-                required: 'Valor é obrigatório',
-                min: {
-                  value: 0.01,
-                  message: 'O valor deve ser maior que zero',
-                },
-                valueAsNumber: true,
-              })}
-              error={errors.total_value?.message}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Data da Compra"
-              type="date"
-              leftIcon={<Calendar size={18} />}
-              {...register('purchase_date', {
-                required: 'Data da compra é obrigatória',
-              })}
-              error={errors.purchase_date?.message}
-            />
-            
-            <Input
-              label="Fornecedor (Opcional)"
-              placeholder="Ex: Mercado Central"
-              leftIcon={<Store size={18} />}
-              {...register('supplier')}
-              error={errors.supplier?.message}
-            />
+        <CardContent className="space-y-6">
+          <Input
+            label="Nome do Produto"
+            placeholder="Ex: Leite Condensado, Açúcar, Morango..."
+            leftIcon={<Package size={18} />}
+            {...register('name', {
+              required: 'Nome do produto é obrigatório',
+              maxLength: {
+                value: 100,
+                message: 'O nome não pode ter mais de 100 caracteres',
+              },
+            })}
+            error={errors.name?.message}
+          />
+          
+          <input type="hidden" {...register('unit_of_measure')} value="gramas" />
+          
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <h3 className="text-sm font-medium text-blue-800 mb-2">ℹ️ Informação</h3>
+            <p className="text-sm text-blue-700">
+              {isEditing 
+                ? 'Você pode alterar apenas o nome do produto. Para registrar novas compras, use o formulário de "Nova Entrada de Estoque".'
+                : 'Todos os produtos são medidos em gramas para facilitar os cálculos. Após criar o produto, você será direcionado para registrar a primeira compra.'
+              }
+            </p>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
@@ -169,7 +99,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               isLoading={isSubmitting}
               leftIcon={<Save size={18} />}
             >
-              {isEditing ? 'Atualizar' : 'Cadastrar'} Produto
+              {isEditing ? 'Atualizar' : 'Criar'} Produto
             </Button>
           </div>
         </CardFooter>
