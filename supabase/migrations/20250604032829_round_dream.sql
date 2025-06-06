@@ -29,6 +29,15 @@ BEGIN
   END IF;
 END $$;
 
+-- Drop existing policies if they exist
+DO $$
+BEGIN
+  DROP POLICY IF EXISTS "Users can insert their own products" ON products;
+  DROP POLICY IF EXISTS "Users can read their own products" ON products;
+  DROP POLICY IF EXISTS "Users can update their own products" ON products;
+  DROP POLICY IF EXISTS "Users can delete their own products" ON products;
+END $$;
+
 -- Create policies
 CREATE POLICY "Users can insert their own products"
 ON products
