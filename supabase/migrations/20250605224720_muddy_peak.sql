@@ -36,6 +36,17 @@ CREATE TABLE IF NOT EXISTS product_stock_entries (
     ON DELETE CASCADE
 );
 
+-- Ensure products table has user_id column for RLS policies
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'products' AND column_name = 'user_id'
+  ) THEN
+    ALTER TABLE products ADD COLUMN user_id UUID DEFAULT auth.uid();
+  END IF;
+END $$;
+
 -- Recreate geladinho_stock table
 CREATE TABLE IF NOT EXISTS geladinho_stock (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
