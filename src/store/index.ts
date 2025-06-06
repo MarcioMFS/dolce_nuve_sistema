@@ -507,7 +507,7 @@ export const useStore = create<StoreState>()(
         
         if (stockError) {
           console.error('Error adding geladinho stock:', stockError);
-          return;
+          throw new Error(`Failed to add geladinho stock: ${stockError.message}`);
         }
 
         // If this is a production entry (entrada), we need to deduct ingredients from product stock
@@ -651,15 +651,31 @@ export const useStore = create<StoreState>()(
       },
 
       addSale: async (sale) => {
-        const { error } = await supabase.from('sales').insert([sale]);
+        try {
+          // First, add a stock outflow entry for the geladinho being sold
+          if (sale.geladinho_id) {
+            await get().addGeladinhoStock({
+              geladinho_id: sale.geladinho_id,
+              quantity: sale.quantity,
+              batch_date: new Date(sale.sale_date).toISOString(),
+              movement_type: 'saida',
+            });
+          }
 
-        if (error) {
-          console.error('Error adding sale:', error);
-          return;
+          // Then add the sale record
+          const { error } = await supabase.from('sales').insert([sale]);
+
+          if (error) {
+            console.error('Error adding sale:', error);
+            throw new Error(`Failed to add sale: ${error.message}`);
+          }
+
+          await get().fetchSales();
+          await get().fetchMonthlySales();
+        } catch (error) {
+          console.error('Error in addSale:', error);
+          throw error;
         }
-
-        await get().fetchSales();
-        await get().fetchMonthlySales();
       },
 
       updateSale: async (id, updatedFields) => {
