@@ -1,4 +1,4 @@
-import { UnitOfMeasure, Product, Ingredient, Recipe, Geladinho, GeladinhoStock } from '../types';
+import { UnitOfMeasure, Product, Ingredient, Recipe, Geladinho, GeladinhoStock, ProductStockEntry } from '../types';
 
 // 🧮 Calcula o preço por unidade base (g, ml ou un)
 export const calculateUnitPrice = (
@@ -96,15 +96,34 @@ export const calculateRealMargin = (
   return (unitProfit / suggestedPrice) * 100;
 };
 
+// 💰 Calcula preço médio ponderado baseado nas entradas de estoque
+export const calculateWeightedAveragePrice = (stockEntries: ProductStockEntry[]): number => {
+  if (!stockEntries || stockEntries.length === 0) return 0;
+  
+  // Filtra apenas entradas positivas (compras)
+  const positiveEntries = stockEntries.filter(entry => entry.quantity > 0);
+  
+  if (positiveEntries.length === 0) return 0;
+  
+  let totalCost = 0;
+  let totalQuantity = 0;
+  
+  positiveEntries.forEach(entry => {
+    totalCost += entry.total_cost;
+    totalQuantity += entry.quantity;
+  });
+  
+  return totalQuantity > 0 ? totalCost / totalQuantity : 0;
+};
+
 // 🧾 Processa um produto individual para exibir preços
-export const processProductWithCalculations = (product: Product) => {
+export const processProductWithCalculations = (product: Product & { stock_entries?: ProductStockEntry[] }) => {
   if (!product) return null;
 
-  const unitPrice = calculateUnitPrice(
-    product.total_value,
-    product.total_quantity,
-    product.unit_of_measure
-  );
+  // Calcula preço médio ponderado baseado nas entradas de estoque
+  const unitPrice = product.stock_entries && product.stock_entries.length > 0
+    ? calculateWeightedAveragePrice(product.stock_entries)
+    : calculateUnitPrice(product.total_value, product.total_quantity, product.unit_of_measure);
 
   const standardPrice = calculateStandardPrice(unitPrice, product.unit_of_measure);
 

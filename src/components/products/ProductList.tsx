@@ -60,7 +60,7 @@ export const ProductList: React.FC<ProductListProps> = ({ products }) => {
                     Nome
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Quantidade
+                    Estoque Atual
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Preço por grama
@@ -69,7 +69,7 @@ export const ProductList: React.FC<ProductListProps> = ({ products }) => {
                     Preço por kg
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Data da Compra
+                    Valor em Estoque
                   </th>
                   <th scope="col" className="relative px-6 py-3">
                     <span className="sr-only">Editar</span>
@@ -77,37 +77,64 @@ export const ProductList: React.FC<ProductListProps> = ({ products }) => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                      {product.supplier && (
-                        <div className="text-xs text-gray-500">{product.supplier}</div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {product.total_quantity}g
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatCurrency(product.unit_price)}/g
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      {formatCurrency(product.standard_price)}/kg
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(product.purchase_date).toLocaleDateString('pt-BR')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link
-                        to={`/produtos/editar/${product.id}`}
-                        className="text-primary-600 hover:text-primary-900 inline-flex items-center gap-1"
-                      >
-                        <Edit size={16} />
-                        <span>Editar</span>
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                {filteredProducts.map((product) => {
+                  const stockValue = (product.total_stock || 0) * product.unit_price;
+                  const hasLowStock = (product.total_stock || 0) <= 100;
+                  const isOutOfStock = (product.total_stock || 0) <= 10;
+                  
+                  return (
+                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <Package className="h-5 w-5 text-gray-400 mr-3" />
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                            {product.supplier && (
+                              <div className="text-xs text-gray-500">{product.supplier}</div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <span className={`text-sm font-medium ${
+                            isOutOfStock ? 'text-red-600' : hasLowStock ? 'text-yellow-600' : 'text-gray-900'
+                          }`}>
+                            {product.total_stock || 0}g
+                          </span>
+                          {isOutOfStock && (
+                            <Badge variant="error" className="ml-2 text-xs">
+                              Sem estoque
+                            </Badge>
+                          )}
+                          {hasLowStock && !isOutOfStock && (
+                            <Badge variant="warning" className="ml-2 text-xs">
+                              Estoque baixo
+                            </Badge>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatCurrency(product.unit_price)}/g
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                        {formatCurrency(product.standard_price)}/kg
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                        {formatCurrency(stockValue)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <Link
+                          to={`/produtos/editar/${product.id}`}
+                          className="text-primary-600 hover:text-primary-900 inline-flex items-center gap-1"
+                        >
+                          <Edit size={16} />
+                          <span>Editar</span>
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
