@@ -6,7 +6,7 @@ import { Select } from '../ui/Select';
 import { Button } from '../ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/Card';
 import { Sale } from '../../types';
-import { Calendar, IceCream2, Hash, Save } from 'lucide-react';
+import { Calendar, IceCream2, Hash, Save, AlertTriangle } from 'lucide-react';
 
 export interface SaleFormData {
   sale_date: string;
@@ -40,11 +40,27 @@ export const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, defaultValues, isE
 
   const watchedQuantity = watch('quantity');
   const watchedUnit = watch('unit_price');
+  const watchedGeladinhoId = watch('geladinho_id');
+  
   const total = watchedQuantity * watchedUnit;
 
-  const geladinhoOptions = geladinhos.map(g => ({ value: g.id, label: g.name }));
+  // Find selected geladinho and check stock
+  const selectedGeladinho = geladinhos.find(g => g.id === watchedGeladinhoId);
+  const availableStock = selectedGeladinho?.available_quantity || 0;
+  const hasInsufficientStock = watchedQuantity > availableStock;
+
+  const geladinhoOptions = geladinhos.map(g => ({ 
+    value: g.id, 
+    label: `${g.name} (${g.available_quantity} unidades disponíveis)` 
+  }));
 
   const onFormSubmit = (data: SaleFormData) => {
+    // Final validation before submitting
+    if (data.quantity > availableStock) {
+      alert(`Estoque insuficiente! Disponível: ${availableStock} unidades`);
+      return;
+    }
+
     const formatted = {
       ...data,
       quantity: Number(data.quantity),
@@ -69,6 +85,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, defaultValues, isE
             {...register('sale_date', { required: 'Data é obrigatória' })}
             error={errors.sale_date?.message}
           />
+          
           <Select
             label="Geladinho"
             options={geladinhoOptions}
@@ -76,14 +93,97 @@ export const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, defaultValues, isE
             {...register('geladinho_id', { required: 'Produto é obrigatório' })}
             error={errors.geladinho_id?.message}
           />
+
+          {/* Stock Information */}
+          {selectedGeladinho && (
+            <div className={`p-4 rounded-lg border ${
+              availableStock === 0 
+                ? 'bg-red-50 border-red-200' 
+                : availableStock <= 5 
+                ? 'bg-yellow-50 border-yellow-200' 
+                : 'bg-blue-50 border-blue-200'
+            }`}>
+              <div className="flex items-center mb-2">
+                <IceCream2 className={`h-5 w-5 mr-2 ${
+                  availableStock === 0 
+                    ? 'text-red-600' 
+                    : availableStock <= 5 
+                    ? 'text-yellow-600' 
+                    : 'text-blue-600'
+                }`} />
+                <h4 className={`font-medium ${
+                  availableStock === 0 
+                    ? 'text-red-800' 
+                    : availableStock <= 5 
+                    ? 'text-yellow-800' 
+                    : 'text-blue-800'
+                }`}>
+                  Informações de Estoque
+                </h4>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-600">Produto:</span>
+                  <span className="ml-2 font-medium">{selectedGeladinho.name}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Estoque Disponível:</span>
+                  <span className={`ml-2 font-bold ${
+                    availableStock === 0 
+                      ? 'text-red-600' 
+                      : availableStock <= 5 
+                      ? 'text-yellow-600' 
+                      : 'text-green-600'
+                  }`}>
+                    {availableStock} unidades
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Categoria:</span>
+                  <span className="ml-2">{selectedGeladinho.category}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Preço Sugerido:</span>
+                  <span className="ml-2 font-medium">
+                    R$ {selectedGeladinho.suggested_price.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+              
+              {availableStock === 0 && (
+                <div className="mt-3 flex items-center text-red-700">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  <span className="text-sm font-medium">
+                    Produto sem estoque! Não é possível realizar vendas.
+                  </span>
+                </div>
+              )}
+              
+              {availableStock > 0 && availableStock <= 5 && (
+                <div className="mt-3 flex items-center text-yellow-700">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  <span className="text-sm font-medium">
+                    Estoque baixo! Considere produzir mais unidades.
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+          
           <div className="grid grid-cols-2 gap-4">
             <Input
               label="Quantidade"
               type="number"
               min="1"
+              max={availableStock}
               leftIcon={<Hash size={18} />}
-              {...register('quantity', { required: true, valueAsNumber: true, min: 1 })}
-              error={errors.quantity?.message}
+              {...register('quantity', { 
+                required: 'Quantidade é obrigatória', 
+                valueAsNumber: true, 
+                min: { value: 1, message: 'Quantidade deve ser pelo menos 1' },
+                max: { value: availableStock, message: `Máximo disponível: ${availableStock}` }
+              })}
+              error={errors.quantity?.message || (hasInsufficientStock ? `Estoque insuficiente! Máximo: ${availableStock}` : undefined)}
             />
             <Input
               label="Preço Unitário"
@@ -91,14 +191,29 @@ export const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, defaultValues, isE
               step="0.01"
               min="0"
               leftIcon={<Save size={18} />}
-              {...register('unit_price', { required: true, valueAsNumber: true, min: 0 })}
+              {...register('unit_price', { required: 'Preço é obrigatório', valueAsNumber: true, min: 0 })}
               error={errors.unit_price?.message}
             />
           </div>
-          <p className="text-sm text-gray-700">Total: R$ {total.toFixed(2)}</p>
+          
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-gray-700">Total da Venda:</span>
+              <span className="text-lg font-bold text-primary-600">
+                R$ {total.toFixed(2)}
+              </span>
+            </div>
+          </div>
         </CardContent>
         <CardFooter className="flex justify-end">
-          <Button type="submit" isLoading={isSubmitting} leftIcon={<Save size={18} />}>Salvar Venda</Button>
+          <Button 
+            type="submit" 
+            isLoading={isSubmitting} 
+            leftIcon={<Save size={18} />}
+            disabled={availableStock === 0 || hasInsufficientStock}
+          >
+            {availableStock === 0 ? 'Sem Estoque' : 'Salvar Venda'}
+          </Button>
         </CardFooter>
       </form>
     </Card>
