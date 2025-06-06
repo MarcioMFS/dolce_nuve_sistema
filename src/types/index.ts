@@ -73,7 +73,6 @@ export interface Geladinho {
   created_at: string;
   updated_at: string;
   recipe?: RecipeWithCalculations;
-  available_quantity: number;
 }
 
 export interface GeladinhoStock {
@@ -91,22 +90,6 @@ export interface GeladinhoWithCalculations extends Geladinho {
   suggested_price: number;
   unit_profit: number;
   real_margin: number;
-  stock_entries?: GeladinhoStock[];
-}
-
-export interface Sale {
-  id: string;
-  sale_date: string;
-  geladinho_id: string;
-  quantity: number;
-  unit_price: number;
-  total_price: number;
-  created_at: string;
-  updated_at: string;
-  geladinho?: GeladinhoWithCalculations;
-}
-
-export interface MonthlySales {
-  month: string;
-  total_sales: number;
+  available_quantity: number;
+  stock?: GeladinhoStock[];
 }
