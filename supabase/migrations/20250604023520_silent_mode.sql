@@ -71,6 +71,15 @@ ALTER TABLE recipes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE recipe_ingredients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE geladinhos ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing product policies if they exist
+DO $$
+BEGIN
+  DROP POLICY IF EXISTS "Users can read their own products" ON products;
+  DROP POLICY IF EXISTS "Users can insert their own products" ON products;
+  DROP POLICY IF EXISTS "Users can update their own products" ON products;
+  DROP POLICY IF EXISTS "Users can delete their own products" ON products;
+END $$;
+
 -- Create policies
 CREATE POLICY "Users can read their own products"
   ON products
@@ -98,6 +107,14 @@ CREATE POLICY "Users can delete their own products"
   USING (true);
 
 -- Recipe policies
+DO $$
+BEGIN
+  DROP POLICY IF EXISTS "Users can read their own recipes" ON recipes;
+  DROP POLICY IF EXISTS "Users can insert their own recipes" ON recipes;
+  DROP POLICY IF EXISTS "Users can update their own recipes" ON recipes;
+  DROP POLICY IF EXISTS "Users can delete their own recipes" ON recipes;
+END $$;
+
 CREATE POLICY "Users can read their own recipes"
   ON recipes
   FOR SELECT
@@ -124,6 +141,14 @@ CREATE POLICY "Users can delete their own recipes"
   USING (true);
 
 -- Recipe ingredients policies
+DO $$
+BEGIN
+  DROP POLICY IF EXISTS "Users can read their own recipe ingredients" ON recipe_ingredients;
+  DROP POLICY IF EXISTS "Users can insert their own recipe ingredients" ON recipe_ingredients;
+  DROP POLICY IF EXISTS "Users can update their own recipe ingredients" ON recipe_ingredients;
+  DROP POLICY IF EXISTS "Users can delete their own recipe ingredients" ON recipe_ingredients;
+END $$;
+
 CREATE POLICY "Users can read their own recipe ingredients"
   ON recipe_ingredients
   FOR SELECT
@@ -150,6 +175,14 @@ CREATE POLICY "Users can delete their own recipe ingredients"
   USING (true);
 
 -- Geladinho policies
+DO $$
+BEGIN
+  DROP POLICY IF EXISTS "Users can read their own geladinhos" ON geladinhos;
+  DROP POLICY IF EXISTS "Users can insert their own geladinhos" ON geladinhos;
+  DROP POLICY IF EXISTS "Users can update their own geladinhos" ON geladinhos;
+  DROP POLICY IF EXISTS "Users can delete their own geladinhos" ON geladinhos;
+END $$;
+
 CREATE POLICY "Users can read their own geladinhos"
   ON geladinhos
   FOR SELECT
@@ -193,21 +226,25 @@ END;
 $$ language 'plpgsql';
 
 -- Create triggers to automatically update updated_at
+DROP TRIGGER IF EXISTS update_products_updated_at ON products;
 CREATE TRIGGER update_products_updated_at
   BEFORE UPDATE ON products
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_recipes_updated_at ON recipes;
 CREATE TRIGGER update_recipes_updated_at
   BEFORE UPDATE ON recipes
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_recipe_ingredients_updated_at ON recipe_ingredients;
 CREATE TRIGGER update_recipe_ingredients_updated_at
   BEFORE UPDATE ON recipe_ingredients
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_geladinhos_updated_at ON geladinhos;
 CREATE TRIGGER update_geladinhos_updated_at
   BEFORE UPDATE ON geladinhos
   FOR EACH ROW
