@@ -58,12 +58,6 @@ CREATE POLICY "Users can delete their own sales"
   TO authenticated
   USING (true);
 
--- Create trigger for updated_at
-CREATE TRIGGER update_sales_updated_at
-  BEFORE UPDATE ON sales
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
-
 -- Create monthly sales view
 CREATE OR REPLACE VIEW monthly_sales AS
 SELECT 
