@@ -1,14 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useStore } from '../store';
 import { GeladinhoForm, GeladinhoFormData } from '../components/geladinhos/GeladinhoForm';
+import { GeladinhoProductionForm, ProductionFormData } from '../components/geladinhos/GeladinhoProductionForm';
+import { GeladinhoProductionHistory } from '../components/geladinhos/GeladinhoProductionHistory';
 import { Button } from '../components/ui/Button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 
 export const GeladinhoFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { geladinhos, addGeladinho, updateGeladinho, deleteGeladinho, getGeladinho } = useStore();
+  const { 
+    geladinhos, 
+    addGeladinho, 
+    updateGeladinho, 
+    deleteGeladinho, 
+    getGeladinho,
+    addGeladinhoStock,
+    fetchGeladinhoStock 
+  } = useStore();
+  
+  const [showProductionForm, setShowProductionForm] = useState(false);
   
   const isEditing = Boolean(id);
   const geladinho = id ? getGeladinho(id) : undefined;
@@ -27,6 +39,18 @@ export const GeladinhoFormPage: React.FC = () => {
       deleteGeladinho(id);
       navigate('/geladinhos');
     }
+  };
+
+  const handleProductionSubmit = async (data: ProductionFormData) => {
+    if (!id) return;
+
+    await addGeladinhoStock({
+      geladinho_id: id,
+      ...data,
+    });
+
+    setShowProductionForm(false);
+    await fetchGeladinhoStock(id);
   };
   
   if (isEditing && !geladinho) {
@@ -57,12 +81,40 @@ export const GeladinhoFormPage: React.FC = () => {
         </h1>
       </div>
       
-      <GeladinhoForm
-        onSubmit={handleSubmit}
-        defaultValues={geladinho}
-        onDelete={isEditing ? handleDelete : undefined}
-        isEditing={isEditing}
-      />
+      {isEditing ? (
+        <div className="space-y-6">
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setShowProductionForm(true)}
+              leftIcon={<Plus size={18} />}
+              disabled={showProductionForm || geladinho.status !== 'Ativo'}
+            >
+              Registrar Produção
+            </Button>
+          </div>
+
+          {showProductionForm && (
+            <GeladinhoProductionForm
+              onSubmit={handleProductionSubmit}
+              onCancel={() => setShowProductionForm(false)}
+            />
+          )}
+
+          <GeladinhoProductionHistory entries={geladinho.stock || []} />
+
+          <GeladinhoForm
+            onSubmit={handleSubmit}
+            defaultValues={geladinho}
+            onDelete={handleDelete}
+            isEditing={true}
+          />
+        </div>
+      ) : (
+        <GeladinhoForm
+          onSubmit={handleSubmit}
+          isEditing={false}
+        />
+      )}
     </div>
   );
 };

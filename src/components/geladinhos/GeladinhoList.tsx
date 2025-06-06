@@ -9,7 +9,8 @@ import {
   DollarSign,
   Tag,
   Clock,
-  Thermometer
+  Thermometer,
+  Package
 } from 'lucide-react';
 
 import { GeladinhoWithCalculations, Category, Status } from '../../types';
@@ -175,6 +176,14 @@ export const GeladinhoList: React.FC<GeladinhoListProps> = ({ geladinhos }) => {
                   )}
                   
                   <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-4">
+                    <div className="flex items-center">
+                      <Package size={16} className="text-gray-400 mr-1" />
+                      <span className="text-sm text-gray-600">Estoque:</span>
+                      <span className="text-sm font-medium ml-1">
+                        {geladinho.available_quantity} un
+                      </span>
+                    </div>
+
                     <div className="flex items-center">
                       <DollarSign size={16} className="text-gray-400 mr-1" />
                       <span className="text-sm text-gray-600">Custo:</span>
