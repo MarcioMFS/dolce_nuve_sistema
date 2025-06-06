@@ -50,7 +50,10 @@ export const ProductFormPage: React.FC = () => {
     });
 
     setShowStockEntryForm(false);
-    fetchStockEntries(id);
+    // Aguarda a atualização do histórico de entradas para
+    // garantir que o registro recém-criado seja exibido ao
+    // retornar para a página de edição
+    await fetchStockEntries(id);
   };
   
   if (isEditing && !product) {
