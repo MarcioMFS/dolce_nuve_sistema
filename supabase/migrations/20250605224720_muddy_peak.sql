@@ -1,18 +1,3 @@
-/*
-  # Fix Database Schema and Relationships
-
-  1. Changes
-    - Drop and recreate tables with proper relationships
-    - Set up correct foreign key constraints
-    - Create proper indexes
-    - Enable RLS with appropriate policies
-    
-  2. Tables
-    - product_stock_entries
-    - geladinho_stock
-    - sales
-*/
-
 -- Drop existing tables and views if they exist
 DROP VIEW IF EXISTS monthly_sales CASCADE;
 DROP TABLE IF EXISTS sales CASCADE;
@@ -64,7 +49,7 @@ CREATE TABLE IF NOT EXISTS geladinho_stock (
 -- Recreate sales table
 CREATE TABLE IF NOT EXISTS sales (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  sale_date date NOT NULL,
+  sale_date timestamptz NOT NULL,
   geladinho_id uuid NOT NULL REFERENCES geladinhos(id) ON DELETE RESTRICT,
   quantity integer NOT NULL CHECK (quantity > 0),
   unit_price numeric NOT NULL CHECK (unit_price >= 0),
@@ -157,10 +142,10 @@ CREATE TRIGGER update_sales_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 
 -- Create monthly sales view
-CREATE VIEW monthly_sales AS
+CREATE OR REPLACE VIEW monthly_sales AS
 SELECT 
-  date_trunc('month', sale_date)::date as month,
+  date_trunc('month', sale_date) as month,
   sum(total_price) as total_sales
 FROM sales
-GROUP BY date_trunc('month', sale_date)::date
+GROUP BY date_trunc('month', sale_date)
 ORDER BY month;
