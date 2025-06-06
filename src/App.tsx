@@ -13,6 +13,7 @@ import { GeladinhoFormPage } from './pages/GeladinhoFormPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { SalesPage } from './pages/SalesPage';
 import { SaleFormPage } from './pages/SaleFormPage';
+import { StockPage } from './pages/StockPage';
 
 function App() {
   return (
@@ -40,10 +41,11 @@ function App() {
           <Route path="geladinhos/editar/:id" element={<GeladinhoFormPage />} />
           <Route path="vendas" element={<SalesPage />} />
           <Route path="vendas/nova" element={<SaleFormPage />} />
+          <Route path="estoque" element={<StockPage />} />
           <Route path="relatorios" element={<ReportsPage />} />
         </Route>
         
-        <Route path="*" element={<Navigate to="/\" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

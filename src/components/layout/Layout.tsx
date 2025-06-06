@@ -8,6 +8,7 @@ import {
   IceCream2,
   ShoppingCart,
   BarChart3,
+  Package,
   Menu, 
   X,
   LogOut
@@ -62,6 +63,7 @@ export const Layout: React.FC<LayoutProps> = () => {
     { to: '/produtos', label: 'Produtos', icon: <PackageOpen size={20} /> },
     { to: '/receitas', label: 'Receitas', icon: <Clipboard size={20} /> },
     { to: '/geladinhos', label: 'Geladinhos', icon: <IceCream2 size={20} /> },
+    { to: '/estoque', label: 'Estoque', icon: <Package size={20} /> },
     { to: '/vendas', label: 'Vendas', icon: <ShoppingCart size={20} /> },
     { to: '/relatorios', label: 'Relatórios', icon: <BarChart3 size={20} /> },
   ];
