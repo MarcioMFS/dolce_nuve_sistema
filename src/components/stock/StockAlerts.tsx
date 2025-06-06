@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, Package, IceCream2, TrendingDown, ShoppingCart } from 'lucide-react';
+import { AlertTriangle, Package, IceCream2, TrendingDown, ShoppingCart, Download } from 'lucide-react';
 import { ProductWithCalculations, GeladinhoWithCalculations } from '../../types';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
@@ -33,6 +33,157 @@ export const StockAlerts: React.FC<StockAlertsProps> = ({
   const lowGeladinhos = geladinhos.filter(g => {
     return g.available_quantity > gelادinhoCriticalThreshold && g.available_quantity <= geladinhoLowThreshold;
   });
+
+  // Generate shopping list function
+  const handleGenerateShoppingList = () => {
+    const itemsToRestock = [
+      ...criticalProducts.map(product => ({
+        name: product.name,
+        type: 'Produto',
+        currentStock: product.total_stock || 0,
+        unit: 'g',
+        suggestedQuantity: productLowThreshold * 2, // Double the low threshold for critical items
+        unitPrice: product.unit_price,
+        estimatedCost: (productLowThreshold * 2) * product.unit_price,
+      })),
+      ...lowProducts.map(product => ({
+        name: product.name,
+        type: 'Produto',
+        currentStock: product.total_stock || 0,
+        unit: 'g',
+        suggestedQuantity: productLowThreshold,
+        unitPrice: product.unit_price,
+        estimatedCost: productLowThreshold * product.unit_price,
+      })),
+    ];
+
+    if (itemsToRestock.length === 0) {
+      alert('Não há produtos que precisam de reposição no momento.');
+      return;
+    }
+
+    // Create CSV content
+    const csvContent = [
+      ['Nome do Produto', 'Tipo', 'Estoque Atual', 'Unidade', 'Quantidade Sugerida', 'Preço Unitário', 'Custo Estimado'],
+      ...itemsToRestock.map(item => [
+        item.name,
+        item.type,
+        item.currentStock.toString(),
+        item.unit,
+        item.suggestedQuantity.toString(),
+        item.unitPrice.toFixed(4),
+        item.estimatedCost.toFixed(2)
+      ])
+    ]
+      .map(row => row.join(','))
+      .join('\n');
+
+    // Add summary at the end
+    const totalEstimatedCost = itemsToRestock.reduce((sum, item) => sum + item.estimatedCost, 0);
+    const summaryContent = `\n\nResumo da Lista de Compras:\nTotal de itens: ${itemsToRestock.length}\nCusto total estimado: R$ ${totalEstimatedCost.toFixed(2)}\nData de geração: ${new Date().toLocaleDateString('pt-BR')}`;
+
+    const finalContent = csvContent + summaryContent;
+
+    // Download CSV file
+    const blob = new Blob([finalContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `lista_compras_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Export alerts report function
+  const handleExportAlertsReport = () => {
+    const allAlerts = [
+      ...criticalProducts.map(product => ({
+        name: product.name,
+        type: 'Produto',
+        category: 'Ingrediente',
+        currentStock: product.total_stock || 0,
+        unit: 'g',
+        alertLevel: 'Crítico',
+        unitPrice: product.unit_price,
+        stockValue: (product.total_stock || 0) * product.unit_price,
+        supplier: product.supplier || 'Não informado',
+      })),
+      ...lowProducts.map(product => ({
+        name: product.name,
+        type: 'Produto',
+        category: 'Ingrediente',
+        currentStock: product.total_stock || 0,
+        unit: 'g',
+        alertLevel: 'Baixo',
+        unitPrice: product.unit_price,
+        stockValue: (product.total_stock || 0) * product.unit_price,
+        supplier: product.supplier || 'Não informado',
+      })),
+      ...criticalGeladinhos.map(geladinho => ({
+        name: geladinho.name,
+        type: 'Geladinho',
+        category: geladinho.category,
+        currentStock: geladinho.available_quantity,
+        unit: 'unidades',
+        alertLevel: 'Crítico',
+        unitPrice: geladinho.unit_cost,
+        stockValue: geladinho.available_quantity * geladinho.unit_cost,
+        supplier: 'Produção própria',
+      })),
+      ...lowGeladinhos.map(geladinho => ({
+        name: geladinho.name,
+        type: 'Geladinho',
+        category: geladinho.category,
+        currentStock: geladinho.available_quantity,
+        unit: 'unidades',
+        alertLevel: 'Baixo',
+        unitPrice: geladinho.unit_cost,
+        stockValue: geladinho.available_quantity * geladinho.unit_cost,
+        supplier: 'Produção própria',
+      })),
+    ];
+
+    if (allAlerts.length === 0) {
+      alert('Não há alertas de estoque no momento. Todos os itens estão com estoque adequado.');
+      return;
+    }
+
+    // Create CSV content
+    const csvContent = [
+      ['Nome', 'Tipo', 'Categoria', 'Estoque Atual', 'Unidade', 'Nível de Alerta', 'Preço Unitário', 'Valor em Estoque', 'Fornecedor/Origem'],
+      ...allAlerts.map(alert => [
+        alert.name,
+        alert.type,
+        alert.category,
+        alert.currentStock.toString(),
+        alert.unit,
+        alert.alertLevel,
+        alert.unitPrice.toFixed(4),
+        alert.stockValue.toFixed(2),
+        alert.supplier
+      ])
+    ]
+      .map(row => row.join(','))
+      .join('\n');
+
+    // Add summary statistics
+    const criticalCount = allAlerts.filter(a => a.alertLevel === 'Crítico').length;
+    const lowCount = allAlerts.filter(a => a.alertLevel === 'Baixo').length;
+    const totalStockValue = allAlerts.reduce((sum, alert) => sum + alert.stockValue, 0);
+
+    const summaryContent = `\n\nResumo do Relatório de Alertas:\nTotal de alertas: ${allAlerts.length}\nAlertas críticos: ${criticalCount}\nAlertas de estoque baixo: ${lowCount}\nValor total em estoque (itens em alerta): R$ ${totalStockValue.toFixed(2)}\nData de geração: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`;
+
+    const finalContent = csvContent + summaryContent;
+
+    // Download CSV file
+    const blob = new Blob([finalContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `relatorio_alertas_estoque_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   const AlertCard: React.FC<{
     title: string;
@@ -125,13 +276,17 @@ export const StockAlerts: React.FC<StockAlertsProps> = ({
                 size="sm"
                 variant="outline"
                 leftIcon={<ShoppingCart size={16} />}
+                onClick={handleGenerateShoppingList}
+                className="hover:bg-primary-50 hover:border-primary-300"
               >
                 Gerar Lista de Compras
               </Button>
               <Button
                 size="sm"
                 variant="outline"
-                leftIcon={<Package size={16} />}
+                leftIcon={<Download size={16} />}
+                onClick={handleExportAlertsReport}
+                className="hover:bg-secondary-50 hover:border-secondary-300"
               >
                 Exportar Relatório
               </Button>
