@@ -1,7 +1,7 @@
-export type UnitOfMeasure = 'gramas';
+export type UnitOfMeasure = 'gramas' | 'litros' | 'unidades';
 export type Category = 'Cremoso' | 'Frutas' | 'Especial' | 'Gourmet';
 export type Status = 'Ativo' | 'Inativo' | 'Teste';
-export type MovementType = 'entrada' | 'saida';
+export type MovementType = 'entrada' | 'saida' | 'ajuste';
 
 export interface Product {
   id: string;
