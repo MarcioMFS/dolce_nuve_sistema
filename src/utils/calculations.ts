@@ -152,7 +152,13 @@ export const processGeladinhoWithCalculations = (geladinho: Geladinho & { stock?
   const real_margin = calculateRealMargin(unit_profit, suggested_price);
 
   // Calculate available quantity from stock entries
-  const available_quantity = geladinho.stock?.reduce((total, entry) => total + entry.quantity, 0) || 0;
+  const available_quantity = geladinho.stock?.reduce((total, entry) => {
+    if (entry.movement_type === 'entrada') {
+      return total + entry.quantity;
+    } else {
+      return total - entry.quantity;
+    }
+  }, 0) || 0;
 
   return {
     ...geladinho,

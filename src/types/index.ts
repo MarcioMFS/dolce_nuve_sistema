@@ -1,6 +1,7 @@
 export type UnitOfMeasure = 'gramas';
 export type Category = 'Cremoso' | 'Frutas' | 'Especial' | 'Gourmet';
 export type Status = 'Ativo' | 'Inativo' | 'Teste';
+export type MovementType = 'entrada' | 'saida';
 
 export interface Product {
   id: string;
@@ -78,6 +79,7 @@ export interface GeladinhoStock {
   geladinho_id: string;
   quantity: number;
   batch_date: string;
+  movement_type: MovementType;
   created_at: string;
   updated_at: string;
 }
