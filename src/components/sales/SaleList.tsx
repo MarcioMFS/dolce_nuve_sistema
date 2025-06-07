@@ -66,7 +66,7 @@ export const SaleList: React.FC<SaleListProps> = ({ sales, onDelete }) => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd.</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço Unit.</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bruto</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Líquido</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lucro</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                 </tr>
               </thead>
@@ -85,7 +85,10 @@ export const SaleList: React.FC<SaleListProps> = ({ sales, onDelete }) => {
                       {formatCurrency(sale.total_price)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                      {formatCurrency(sale.total_price - (sale.discount || 0))}
+                      {formatCurrency(
+                        sale.total_price -
+                          sale.quantity * (sale.geladinho?.unit_cost || 0)
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       {onDelete && (

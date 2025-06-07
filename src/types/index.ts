@@ -100,8 +100,6 @@ export interface Sale {
   geladinho_id: string;
   quantity: number;
   unit_price: number;
-  /** Desconto aplicado na venda */
-  discount: number;
   total_price: number;
   created_at: string;
   updated_at: string;
