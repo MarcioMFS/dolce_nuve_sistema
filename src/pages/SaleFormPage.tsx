@@ -15,6 +15,7 @@ export const SaleFormPage: React.FC = () => {
       geladinho_id: data.geladinho_id,
       quantity: data.quantity,
       unit_price: data.unit_price,
+      discount: data.discount,
       total_price: data.quantity * data.unit_price,
     });
     navigate('/vendas');
