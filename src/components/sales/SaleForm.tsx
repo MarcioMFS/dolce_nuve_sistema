@@ -13,6 +13,7 @@ export interface SaleFormData {
   geladinho_id: string;
   quantity: number;
   unit_price: number;
+  discount: number;
 }
 
 interface SaleFormProps {
@@ -35,13 +36,16 @@ export const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, defaultValues, isE
       geladinho_id: defaultValues?.geladinho_id || (geladinhos[0]?.id || ''),
       quantity: defaultValues?.quantity || 1,
       unit_price: defaultValues?.unit_price || 0,
+      discount: defaultValues?.discount || 0,
     },
   });
 
   const watchedQuantity = watch('quantity');
   const watchedUnit = watch('unit_price');
+  const watchedDiscount = watch('discount');
   const watchedGeladinhoId = watch('geladinho_id');
   const total = watchedQuantity * watchedUnit;
+  const netTotal = total - watchedDiscount;
 
   // Get the selected geladinho and its available quantity
   const selectedGeladinho = geladinhos.find(g => g.id === watchedGeladinhoId);
@@ -54,6 +58,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, defaultValues, isE
       ...data,
       quantity: Number(data.quantity),
       unit_price: Number(data.unit_price),
+      discount: Number(data.discount) || 0,
       total_price: Number(data.quantity) * Number(data.unit_price),
     };
     onSubmit(formatted);
@@ -113,15 +118,28 @@ export const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, defaultValues, isE
               step="0.01"
               min="0"
               leftIcon={<Save size={18} />}
-              {...register('unit_price', { 
-                required: 'Preço é obrigatório', 
-                valueAsNumber: true, 
+              {...register('unit_price', {
+                required: 'Preço é obrigatório',
+                valueAsNumber: true,
                 min: { value: 0, message: 'Preço deve ser maior ou igual a 0' }
               })}
               error={errors.unit_price?.message}
             />
+            <Input
+              label="Desconto"
+              type="number"
+              step="0.01"
+              min="0"
+              leftIcon={<Save size={18} />}
+              {...register('discount', {
+                valueAsNumber: true,
+                min: { value: 0, message: 'Desconto deve ser maior ou igual a 0' }
+              })}
+              error={errors.discount?.message}
+            />
           </div>
-          <p className="text-sm text-gray-700">Total: R$ {total.toFixed(2)}</p>
+          <p className="text-sm text-gray-700">Total Bruto: R$ {total.toFixed(2)}</p>
+          <p className="text-sm text-gray-700">Total Líquido: R$ {netTotal.toFixed(2)}</p>
         </CardContent>
         <CardFooter className="flex justify-end">
           <Button 
