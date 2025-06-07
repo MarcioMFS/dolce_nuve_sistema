@@ -215,11 +215,10 @@ export const processGeladinhoWithCalculations = (geladinho: Geladinho & { stock?
 
   // Calculate available quantity from stock entries
   const available_quantity = geladinho.stock?.reduce((total, entry) => {
-    if (entry.movement_type === 'entrada') {
-      return total + entry.quantity;
-    } else {
-      return total - entry.quantity;
-    }
+    const qty = Math.abs(entry.quantity);
+    return entry.movement_type === 'entrada'
+      ? total + qty
+      : total - qty;
   }, 0) || 0;
 
   console.log(`Geladinho ${geladinho.name} calculations:`, {
