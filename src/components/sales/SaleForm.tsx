@@ -6,7 +6,7 @@ import { Select } from '../ui/Select';
 import { Button } from '../ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/Card';
 import { Sale } from '../../types';
-import { Calendar, IceCream2, Hash, Save } from 'lucide-react';
+import { Calendar, IceCream2, Hash, Save, AlertTriangle } from 'lucide-react';
 
 export interface SaleFormData {
   sale_date: string;
@@ -22,7 +22,7 @@ interface SaleFormProps {
 }
 
 export const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, defaultValues, isEditing = false }) => {
-  const { geladinhos } = useStore();
+  const { geladinhos, geladinhoStock } = useStore();
 
   const {
     register,
@@ -40,7 +40,12 @@ export const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, defaultValues, isE
 
   const watchedQuantity = watch('quantity');
   const watchedUnit = watch('unit_price');
+  const watchedGeladinhoId = watch('geladinho_id');
   const total = watchedQuantity * watchedUnit;
+
+  // Get available stock for the selected geladinho
+  const selectedGeladinhoStock = geladinhoStock.find(stock => stock.geladinho_id === watchedGeladinhoId);
+  const availableQuantity = selectedGeladinhoStock?.available_quantity || 0;
 
   const geladinhoOptions = geladinhos.map(g => ({ value: g.id, label: g.name }));
 
@@ -76,13 +81,30 @@ export const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, defaultValues, isE
             {...register('geladinho_id', { required: 'Produto é obrigatório' })}
             error={errors.geladinho_id?.message}
           />
+          
+          {/* Stock availability indicator */}
+          {watchedGeladinhoId && (
+            <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <AlertTriangle size={16} className="text-blue-600" />
+              <span className="text-sm text-blue-800">
+                Estoque disponível: {availableQuantity} unidades
+              </span>
+            </div>
+          )}
+          
           <div className="grid grid-cols-2 gap-4">
             <Input
               label="Quantidade"
               type="number"
               min="1"
+              max={availableQuantity}
               leftIcon={<Hash size={18} />}
-              {...register('quantity', { required: true, valueAsNumber: true, min: 1 })}
+              {...register('quantity', { 
+                required: 'Quantidade é obrigatória', 
+                valueAsNumber: true, 
+                min: { value: 1, message: 'Quantidade deve ser maior que 0' },
+                max: { value: availableQuantity, message: `Estoque insuficiente. Disponível: ${availableQuantity}` }
+              })}
               error={errors.quantity?.message}
             />
             <Input
@@ -91,14 +113,25 @@ export const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, defaultValues, isE
               step="0.01"
               min="0"
               leftIcon={<Save size={18} />}
-              {...register('unit_price', { required: true, valueAsNumber: true, min: 0 })}
+              {...register('unit_price', { 
+                required: 'Preço é obrigatório', 
+                valueAsNumber: true, 
+                min: { value: 0, message: 'Preço deve ser maior ou igual a 0' }
+              })}
               error={errors.unit_price?.message}
             />
           </div>
           <p className="text-sm text-gray-700">Total: R$ {total.toFixed(2)}</p>
         </CardContent>
         <CardFooter className="flex justify-end">
-          <Button type="submit" isLoading={isSubmitting} leftIcon={<Save size={18} />}>Salvar Venda</Button>
+          <Button 
+            type="submit" 
+            isLoading={isSubmitting} 
+            leftIcon={<Save size={18} />}
+            disabled={watchedQuantity > availableQuantity || availableQuantity === 0}
+          >
+            Salvar Venda
+          </Button>
         </CardFooter>
       </form>
     </Card>
