@@ -22,7 +22,7 @@ interface SaleFormProps {
 }
 
 export const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, defaultValues, isEditing = false }) => {
-  const { geladinhos, geladinhoStock } = useStore();
+  const { geladinhos } = useStore();
 
   const {
     register,
@@ -43,9 +43,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({ onSubmit, defaultValues, isE
   const watchedGeladinhoId = watch('geladinho_id');
   const total = watchedQuantity * watchedUnit;
 
-  // Get available stock for the selected geladinho
-  const selectedGeladinhoStock = geladinhoStock.find(stock => stock.geladinho_id === watchedGeladinhoId);
-  const availableQuantity = selectedGeladinhoStock?.available_quantity || 0;
+  // Get the selected geladinho and its available quantity
+  const selectedGeladinho = geladinhos.find(g => g.id === watchedGeladinhoId);
+  const availableQuantity = selectedGeladinho?.available_quantity || 0;
 
   const geladinhoOptions = geladinhos.map(g => ({ value: g.id, label: g.name }));
 
