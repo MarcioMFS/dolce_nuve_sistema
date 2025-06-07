@@ -1,4 +1,4 @@
-import { UnitOfMeasure, Product, Ingredient, Recipe, Geladinho, GeladinhoStock, ProductStockEntry } from '../types';
+import { UnitOfMeasure, Product, Ingredient, Recipe, Geladinho, GeladinhoStock, ProductStockEntry, Sale, SaleWithProfitCalculations } from '../types';
 
 // 🧮 Calcula o preço por unidade base (g, ml ou un)
 export const calculateUnitPrice = (
@@ -114,6 +114,29 @@ export const calculateWeightedAveragePrice = (stockEntries: ProductStockEntry[])
   });
   
   return totalQuantity > 0 ? totalCost / totalQuantity : 0;
+};
+
+// 💵 Calcula lucro de uma venda específica
+export const calculateSaleProfit = (
+  sale: Sale,
+  unitCost: number
+): {
+  unit_profit: number;
+  total_profit: number;
+  profit_margin: number;
+  net_total: number;
+} => {
+  const netTotal = sale.total_price - (sale.discount || 0);
+  const unitProfit = sale.unit_price - unitCost;
+  const totalProfit = unitProfit * sale.quantity - (sale.discount || 0);
+  const profitMargin = netTotal > 0 ? (totalProfit / netTotal) * 100 : 0;
+
+  return {
+    unit_profit: unitProfit,
+    total_profit: totalProfit,
+    profit_margin: profitMargin,
+    net_total: netTotal,
+  };
 };
 
 // 🧾 Processa um produto individual para exibir preços
@@ -243,4 +266,19 @@ export const processGeladinhoWithCalculations = (geladinho: Geladinho & { stock?
 
   console.log(`Final processed geladinho ${geladinho.name}:`, result);
   return result;
+};
+
+// 🛒 Processa uma venda com cálculos de lucro
+export const processSaleWithProfitCalculations = (
+  sale: Sale,
+  geladinho?: any
+): SaleWithProfitCalculations => {
+  const unitCost = geladinho?.unit_cost || 0;
+  const profitCalcs = calculateSaleProfit(sale, unitCost);
+
+  return {
+    ...sale,
+    unit_cost: unitCost,
+    ...profitCalcs,
+  };
 };

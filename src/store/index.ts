@@ -10,14 +10,17 @@ import {
   GeladinhoWithCalculations,
   Ingredient,
   Sale,
+  SaleWithProfitCalculations,
   MonthlySales,
+  DailySales,
   ProductStockEntry,
   GeladinhoStock
 } from '../types';
 import { 
   processProductWithCalculations, 
   processRecipeWithCalculations, 
-  processGeladinhoWithCalculations 
+  processGeladinhoWithCalculations,
+  processSaleWithProfitCalculations
 } from '../utils/calculations';
 import { supabase } from '../lib/supabase';
 
@@ -25,8 +28,9 @@ interface StoreState {
   products: ProductWithCalculations[];
   recipes: RecipeWithCalculations[];
   geladinhos: GeladinhoWithCalculations[];
-  sales: Sale[];
+  sales: SaleWithProfitCalculations[];
   monthlySales: MonthlySales[];
+  dailySales: DailySales[];
 
   // Product actions
   addProduct: (product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'total_stock' | 'total_quantity' | 'total_value' | 'purchase_date' | 'supplier'>) => Promise<string | null>;
@@ -66,9 +70,10 @@ interface StoreState {
   addSale: (sale: Omit<Sale, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   updateSale: (id: string, sale: Partial<Sale>) => Promise<void>;
   deleteSale: (id: string) => Promise<void>;
-  getSale: (id: string) => Sale | undefined;
+  getSale: (id: string) => SaleWithProfitCalculations | undefined;
   fetchSales: () => Promise<void>;
   fetchMonthlySales: () => Promise<void>;
+  fetchDailySales: () => Promise<void>;
 }
 
 export const useStore = create<StoreState>()(
@@ -79,6 +84,7 @@ export const useStore = create<StoreState>()(
       geladinhos: [],
       sales: [],
       monthlySales: [],
+      dailySales: [],
 
       // Product actions
       fetchProducts: async () => {
@@ -700,12 +706,18 @@ export const useStore = create<StoreState>()(
           return;
         }
 
-        const processed = data.map((sale: any) => ({
-          ...sale,
-          geladinho: sale.geladinho
-            ? processGeladinhoWithCalculations(sale.geladinho)
-            : undefined,
-        }));
+        // Get current geladinhos to ensure we have the latest data with calculations
+        const currentGeladinhos = get().geladinhos;
+
+        const processed = data.map((sale: any) => {
+          // Find the geladinho in our current list (which has calculations)
+          const geladinhoWithCalculations = currentGeladinhos.find(g => g.id === sale.geladinho_id);
+          
+          return processSaleWithProfitCalculations(
+            sale,
+            geladinhoWithCalculations
+          );
+        });
 
         set({ sales: processed });
       },
@@ -720,6 +732,7 @@ export const useStore = create<StoreState>()(
 
         await get().fetchSales();
         await get().fetchMonthlySales();
+        await get().fetchDailySales();
         // Refresh geladinhos to update stock levels after sale
         await get().fetchGeladinhos();
       },
@@ -737,6 +750,7 @@ export const useStore = create<StoreState>()(
 
         await get().fetchSales();
         await get().fetchMonthlySales();
+        await get().fetchDailySales();
         // Refresh geladinhos to update stock levels after sale update
         await get().fetchGeladinhos();
       },
@@ -753,6 +767,7 @@ export const useStore = create<StoreState>()(
           sales: state.sales.filter((sale) => sale.id !== id),
         }));
         await get().fetchMonthlySales();
+        await get().fetchDailySales();
         // Refresh geladinhos to update stock levels after sale deletion
         await get().fetchGeladinhos();
       },
@@ -773,6 +788,47 @@ export const useStore = create<StoreState>()(
         }
 
         set({ monthlySales: data });
+      },
+
+      fetchDailySales: async () => {
+        // Calculate daily sales from the sales data
+        const sales = get().sales;
+        
+        const dailySalesMap = new Map<string, {
+          total_sales: number;
+          total_profit: number;
+          total_quantity: number;
+          margins: number[];
+        }>();
+
+        sales.forEach(sale => {
+          const date = sale.sale_date;
+          const existing = dailySalesMap.get(date) || {
+            total_sales: 0,
+            total_profit: 0,
+            total_quantity: 0,
+            margins: []
+          };
+
+          existing.total_sales += sale.net_total;
+          existing.total_profit += sale.total_profit;
+          existing.total_quantity += sale.quantity;
+          existing.margins.push(sale.profit_margin);
+
+          dailySalesMap.set(date, existing);
+        });
+
+        const dailySales: DailySales[] = Array.from(dailySalesMap.entries()).map(([date, data]) => ({
+          date,
+          total_sales: data.total_sales,
+          total_profit: data.total_profit,
+          total_quantity: data.total_quantity,
+          average_margin: data.margins.length > 0 
+            ? data.margins.reduce((sum, margin) => sum + margin, 0) / data.margins.length 
+            : 0,
+        })).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        set({ dailySales });
       },
     }),
     {
@@ -800,6 +856,7 @@ const initializeStore = async () => {
   // Finally load sales and monthly sales
   await useStore.getState().fetchSales();
   await useStore.getState().fetchMonthlySales();
+  await useStore.getState().fetchDailySales();
   console.log('Sales loaded');
   
   console.log('Store initialization complete');

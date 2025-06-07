@@ -108,8 +108,29 @@ export interface Sale {
   geladinho?: GeladinhoWithCalculations;
 }
 
+export interface SaleWithProfitCalculations extends Sale {
+  /** Custo unitário do geladinho no momento da venda */
+  unit_cost: number;
+  /** Lucro por unidade (preço - custo) */
+  unit_profit: number;
+  /** Lucro total da venda */
+  total_profit: number;
+  /** Margem de lucro em percentual */
+  profit_margin: number;
+  /** Total líquido (após desconto) */
+  net_total: number;
+}
+
 export interface MonthlySales {
   month: string;
   total_sales: number;
   total_quantity: number;
+}
+
+export interface DailySales {
+  date: string;
+  total_sales: number;
+  total_profit: number;
+  total_quantity: number;
+  average_margin: number;
 }
