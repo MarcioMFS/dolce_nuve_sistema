@@ -720,6 +720,8 @@ export const useStore = create<StoreState>()(
 
         await get().fetchSales();
         await get().fetchMonthlySales();
+        // Refresh geladinhos to update stock levels after sale
+        await get().fetchGeladinhos();
       },
 
       updateSale: async (id, updatedFields) => {
@@ -735,6 +737,8 @@ export const useStore = create<StoreState>()(
 
         await get().fetchSales();
         await get().fetchMonthlySales();
+        // Refresh geladinhos to update stock levels after sale update
+        await get().fetchGeladinhos();
       },
 
       deleteSale: async (id) => {
@@ -749,6 +753,8 @@ export const useStore = create<StoreState>()(
           sales: state.sales.filter((sale) => sale.id !== id),
         }));
         await get().fetchMonthlySales();
+        // Refresh geladinhos to update stock levels after sale deletion
+        await get().fetchGeladinhos();
       },
 
       getSale: (id) => {
