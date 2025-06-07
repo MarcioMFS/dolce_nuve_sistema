@@ -118,7 +118,12 @@ export const calculateWeightedAveragePrice = (stockEntries: ProductStockEntry[])
 
 // 🧾 Processa um produto individual para exibir preços
 export const processProductWithCalculations = (product: Product & { stock_entries?: ProductStockEntry[] }) => {
-  if (!product) return null;
+  if (!product) {
+    console.warn('processProductWithCalculations: product is null/undefined');
+    return null;
+  }
+
+  console.log(`Processing product ${product.name}:`, product);
 
   // Calcula preço médio ponderado baseado nas entradas de estoque
   // Se não houver entradas de estoque, usa os dados originais do produto
@@ -126,6 +131,7 @@ export const processProductWithCalculations = (product: Product & { stock_entrie
   
   if (product.stock_entries && product.stock_entries.length > 0) {
     unitPrice = calculateWeightedAveragePrice(product.stock_entries);
+    console.log(`Weighted average price for ${product.name}: ${unitPrice}`);
   }
   
   // Se não conseguiu calcular o preço médio ponderado (sem entradas de estoque ou todas negativas),
@@ -136,46 +142,70 @@ export const processProductWithCalculations = (product: Product & { stock_entrie
       product.total_quantity,
       product.unit_of_measure
     );
+    console.log(`Fallback unit price for ${product.name}: ${unitPrice}`);
   }
 
   const standardPrice = calculateStandardPrice(unitPrice, product.unit_of_measure);
 
-  return {
+  const result = {
     ...product,
     unit_price: unitPrice,
     standard_price: standardPrice,
     formatted_unit_price: formatCurrency(unitPrice),
     formatted_standard_price: formatCurrency(standardPrice),
   };
+
+  console.log(`Final processed product ${product.name}:`, result);
+  return result;
 };
 
 // 🍦 Processa uma receita completa
 export const processRecipeWithCalculations = (recipe: Recipe) => {
-  if (!recipe) return null;
+  if (!recipe) {
+    console.warn('processRecipeWithCalculations: recipe is null/undefined');
+    return null;
+  }
+  
+  console.log(`Processing recipe ${recipe.name}:`, recipe);
   
   // Ensure ingredients have their products processed
-  const processedIngredients = recipe.ingredients.map(ingredient => ({
-    ...ingredient,
-    product: ingredient.product ? processProductWithCalculations(ingredient.product) : undefined
-  }));
+  const processedIngredients = recipe.ingredients.map(ingredient => {
+    const processedProduct = ingredient.product ? ingredient.product : undefined;
+    console.log(`Ingredient ${ingredient.product_id} product:`, processedProduct);
+    
+    return {
+      ...ingredient,
+      product: processedProduct
+    };
+  });
   
   const total_cost = calculateRecipeTotalCost(processedIngredients);
   const unit_cost = calculateRecipeUnitCost(total_cost, recipe.yield);
 
-  return {
+  console.log(`Recipe ${recipe.name} calculations:`, { total_cost, unit_cost });
+
+  const result = {
     ...recipe,
     ingredients: processedIngredients,
     total_cost,
     unit_cost,
   };
+
+  console.log(`Final processed recipe ${recipe.name}:`, result);
+  return result;
 };
 
 // ❄️ Processa um geladinho completo (produto final)
 export const processGeladinhoWithCalculations = (geladinho: Geladinho & { stock?: GeladinhoStock[] }) => {
-  if (!geladinho) return null;
+  if (!geladinho) {
+    console.warn('processGeladinhoWithCalculations: geladinho is null/undefined');
+    return null;
+  }
+
+  console.log(`Processing geladinho ${geladinho.name}:`, geladinho);
 
   // Process the recipe first if it exists
-  const processedRecipe = geladinho.recipe ? processRecipeWithCalculations(geladinho.recipe) : null;
+  const processedRecipe = geladinho.recipe ? geladinho.recipe : null;
   
   const total_cost = processedRecipe?.total_cost || 0;
   const unit_cost = processedRecipe?.unit_cost || 0;
@@ -192,7 +222,16 @@ export const processGeladinhoWithCalculations = (geladinho: Geladinho & { stock?
     }
   }, 0) || 0;
 
-  return {
+  console.log(`Geladinho ${geladinho.name} calculations:`, {
+    total_cost,
+    unit_cost,
+    suggested_price,
+    unit_profit,
+    real_margin,
+    available_quantity
+  });
+
+  const result = {
     ...geladinho,
     recipe: processedRecipe,
     total_cost,
@@ -202,4 +241,7 @@ export const processGeladinhoWithCalculations = (geladinho: Geladinho & { stock?
     real_margin,
     available_quantity,
   };
+
+  console.log(`Final processed geladinho ${geladinho.name}:`, result);
+  return result;
 };

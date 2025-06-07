@@ -82,22 +82,34 @@ export const useStore = create<StoreState>()(
 
       // Product actions
       fetchProducts: async () => {
-        const { data: products, error } = await supabase
-          .from('products')
-          .select('*, stock_entries:product_stock_entries(*)')
-          .order('name');
-        
-        if (error) {
-          console.error('Error fetching products:', error);
-          return;
+        try {
+          const { data: products, error } = await supabase
+            .from('products')
+            .select('*, stock_entries:product_stock_entries(*)')
+            .order('name');
+          
+          if (error) {
+            console.error('Error fetching products:', error);
+            return;
+          }
+          
+          console.log('Raw products from DB:', products);
+          
+          const processedProducts = products.map(product => {
+            const processed = processProductWithCalculations({
+              ...product,
+              stock_entries: product.stock_entries || [],
+            });
+            console.log(`Processed product ${product.name}:`, processed);
+            return processed;
+          });
+          
+          console.log('All processed products:', processedProducts);
+          
+          set({ products: processedProducts });
+        } catch (error) {
+          console.error('Error in fetchProducts:', error);
         }
-        
-        const processedProducts = products.map(product => ({
-          ...processProductWithCalculations(product),
-          stock_entries: product.stock_entries || [],
-        }));
-        
-        set({ products: processedProducts });
       },
 
       addProduct: async (product) => {
@@ -146,12 +158,8 @@ export const useStore = create<StoreState>()(
           return;
         }
         
-        set((state) => ({
-          products: state.products.map((product) =>
-            product.id === id ? processProductWithCalculations(data) : product
-          ),
-        }));
-
+        // Refresh all data to ensure consistency
+        await get().fetchProducts();
         await get().fetchRecipes();
         await get().fetchGeladinhos();
       },
@@ -216,38 +224,57 @@ export const useStore = create<StoreState>()(
 
       // Recipe actions
       fetchRecipes: async () => {
-        const { data: recipes, error } = await supabase
-          .from('recipes')
-          .select(`
-            *,
-            ingredients:recipe_ingredients (
-              id,
-              product_id,
-              quantity,
-              products (*)
-            )
-          `)
-          .order('name');
-        
-        if (error) {
-          console.error('Error fetching recipes:', error);
-          return;
+        try {
+          const { data: recipes, error } = await supabase
+            .from('recipes')
+            .select(`
+              *,
+              ingredients:recipe_ingredients (
+                id,
+                product_id,
+                quantity,
+                products (*)
+              )
+            `)
+            .order('name');
+          
+          if (error) {
+            console.error('Error fetching recipes:', error);
+            return;
+          }
+          
+          console.log('Raw recipes from DB:', recipes);
+          
+          // Get current products to ensure we have the latest data
+          const currentProducts = get().products;
+          
+          const processedRecipes = recipes.map((recipe) => {
+            const formattedRecipe = {
+              ...recipe,
+              ingredients: recipe.ingredients.map((ingredient: any) => {
+                // Find the product in our current products list (which has calculations)
+                const productWithCalculations = currentProducts.find(p => p.id === ingredient.product_id);
+                
+                return {
+                  id: ingredient.id,
+                  product_id: ingredient.product_id,
+                  quantity: ingredient.quantity,
+                  product: productWithCalculations || (ingredient.products ? processProductWithCalculations(ingredient.products) : undefined),
+                };
+              }),
+            };
+            
+            const processed = processRecipeWithCalculations(formattedRecipe);
+            console.log(`Processed recipe ${recipe.name}:`, processed);
+            return processed;
+          });
+          
+          console.log('All processed recipes:', processedRecipes);
+          
+          set({ recipes: processedRecipes });
+        } catch (error) {
+          console.error('Error in fetchRecipes:', error);
         }
-        
-        const processedRecipes = recipes.map((recipe) => {
-          const formattedRecipe = {
-            ...recipe,
-            ingredients: recipe.ingredients.map((ingredient: any) => ({
-              id: ingredient.id,
-              product_id: ingredient.product_id,
-              quantity: ingredient.quantity,
-              product: ingredient.products ? processProductWithCalculations(ingredient.products) : undefined,
-            })),
-          };
-          return processRecipeWithCalculations(formattedRecipe);
-        });
-        
-        set({ recipes: processedRecipes });
       },
 
       addRecipe: async (recipe) => {
@@ -396,46 +423,79 @@ export const useStore = create<StoreState>()(
 
       // Geladinho actions
       fetchGeladinhos: async () => {
-        const { data: geladinhos, error } = await supabase
-          .from('geladinhos')
-          .select(`
-            *,
-            recipe:recipes (
+        try {
+          const { data: geladinhos, error } = await supabase
+            .from('geladinhos')
+            .select(`
               *,
-              ingredients:recipe_ingredients (
-                id,
-                product_id,
-                quantity,
-                products (*)
-              )
-            ),
-            stock:geladinho_stock(*)
-          `)
-          .order('name');
-        
-        if (error) {
-          console.error('Error fetching geladinhos:', error);
-          return;
+              recipe:recipes (
+                *,
+                ingredients:recipe_ingredients (
+                  id,
+                  product_id,
+                  quantity,
+                  products (*)
+                )
+              ),
+              stock:geladinho_stock(*)
+            `)
+            .order('name');
+          
+          if (error) {
+            console.error('Error fetching geladinhos:', error);
+            return;
+          }
+          
+          console.log('Raw geladinhos from DB:', geladinhos);
+          
+          // Get current products and recipes to ensure we have the latest data
+          const currentProducts = get().products;
+          const currentRecipes = get().recipes;
+          
+          const processedGeladinhos = geladinhos.map((geladinho) => {
+            let processedRecipe = null;
+            
+            if (geladinho.recipe) {
+              // Try to find the recipe in our current recipes list first
+              processedRecipe = currentRecipes.find(r => r.id === geladinho.recipe.id);
+              
+              // If not found, process it from the raw data
+              if (!processedRecipe) {
+                const formattedRecipe = {
+                  ...geladinho.recipe,
+                  ingredients: geladinho.recipe.ingredients.map((ingredient: any) => {
+                    // Find the product in our current products list (which has calculations)
+                    const productWithCalculations = currentProducts.find(p => p.id === ingredient.product_id);
+                    
+                    return {
+                      id: ingredient.id,
+                      product_id: ingredient.product_id,
+                      quantity: ingredient.quantity,
+                      product: productWithCalculations || (ingredient.products ? processProductWithCalculations(ingredient.products) : undefined),
+                    };
+                  }),
+                };
+                processedRecipe = processRecipeWithCalculations(formattedRecipe);
+              }
+            }
+            
+            const formattedGeladinho = {
+              ...geladinho,
+              recipe: processedRecipe,
+              stock: geladinho.stock || [],
+            };
+            
+            const processed = processGeladinhoWithCalculations(formattedGeladinho);
+            console.log(`Processed geladinho ${geladinho.name}:`, processed);
+            return processed;
+          });
+          
+          console.log('All processed geladinhos:', processedGeladinhos);
+          
+          set({ geladinhos: processedGeladinhos });
+        } catch (error) {
+          console.error('Error in fetchGeladinhos:', error);
         }
-        
-        const processedGeladinhos = geladinhos.map((geladinho) => {
-          const formattedGeladinho = {
-            ...geladinho,
-            recipe: geladinho.recipe ? {
-              ...geladinho.recipe,
-              ingredients: geladinho.recipe.ingredients.map((ingredient: any) => ({
-                id: ingredient.id,
-                product_id: ingredient.product_id,
-                quantity: ingredient.quantity,
-                product: ingredient.products ? processProductWithCalculations(ingredient.products) : undefined,
-              })),
-            } : undefined,
-            stock: geladinho.stock || [],
-          };
-          return processGeladinhoWithCalculations(formattedGeladinho);
-        });
-        
-        set({ geladinhos: processedGeladinhos });
       },
 
       addGeladinho: async (geladinho) => {
@@ -715,9 +775,29 @@ export const useStore = create<StoreState>()(
   )
 );
 
-// Fetch initial data
-useStore.getState().fetchProducts();
-useStore.getState().fetchRecipes();
-useStore.getState().fetchGeladinhos();
-useStore.getState().fetchSales();
-useStore.getState().fetchMonthlySales();
+// Initialize store with proper loading sequence
+const initializeStore = async () => {
+  console.log('Initializing store...');
+  
+  // Load products first (they are the foundation)
+  await useStore.getState().fetchProducts();
+  console.log('Products loaded');
+  
+  // Then load recipes (they depend on products)
+  await useStore.getState().fetchRecipes();
+  console.log('Recipes loaded');
+  
+  // Then load geladinhos (they depend on recipes)
+  await useStore.getState().fetchGeladinhos();
+  console.log('Geladinhos loaded');
+  
+  // Finally load sales and monthly sales
+  await useStore.getState().fetchSales();
+  await useStore.getState().fetchMonthlySales();
+  console.log('Sales loaded');
+  
+  console.log('Store initialization complete');
+};
+
+// Initialize the store
+initializeStore();
